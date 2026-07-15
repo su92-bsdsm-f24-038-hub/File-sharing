@@ -2,8 +2,8 @@ import { initializeApp, getApps, FirebaseApp } from "firebase/app";
 import { getAuth, Auth } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
+  apiKey:"AIzaSyD35aAzNZy7Ptmqojiyj8fzyTm4YK-Svfk",
+  authDomain: "file-sharing-c9698.firebaseapp.com",
   projectId: "file-sharing-c9698",
   storageBucket: "file-sharing-c9698.firebasestorage.app",
   messagingSenderId: "1077555764093",
