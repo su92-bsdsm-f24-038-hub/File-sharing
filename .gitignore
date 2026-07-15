@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+dist-server/
+.next/
+
+# Environment
+.env.local
+.env.*.local
+
+# Logs
+npm-debug.log*
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# TypeScript
+*.tsbuildinfo
+
+# Misc
+quickdrop/
