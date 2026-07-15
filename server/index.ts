@@ -121,6 +121,16 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok", rooms: rooms.size, ts: Date.now() });
 });
 
+app.get("/api/room-by-pin/:pin", (req, res) => {
+  const pin = req.params.pin;
+  for (const [roomId, room] of rooms.entries()) {
+    if (room.pin === pin) {
+      return res.json({ success: true, roomId });
+    }
+  }
+  res.status(404).json({ success: false, error: "room_not_found" });
+});
+
 // ─── Socket.IO ────────────────────────────────────────────────────────────────
 
 const io = new Server(httpServer, {

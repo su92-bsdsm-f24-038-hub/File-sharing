@@ -37,6 +37,9 @@ export default function LandingPage() {
           <span className="font-bold text-lg tracking-tight">QuickDrop</span>
         </div>
         <div className="flex items-center gap-3">
+          <Link href="/join">
+            <Button variant="ghost" size="sm" className="text-purple-400">Enter Code</Button>
+          </Link>
           <Link href="/login">
             <Button variant="ghost" size="sm">Sign In</Button>
           </Link>

@@ -24,7 +24,7 @@ export function QRCodeDisplay({ value, size = 200 }: QRCodeDisplayProps) {
       width: size,
       margin: 2,
       color: {
-        dark: "#ffffff",
+        dark: "#000000",
         light: "#00000000", // transparent background
       },
       errorCorrectionLevel: "M",
