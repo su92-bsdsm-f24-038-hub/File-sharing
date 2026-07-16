@@ -85,9 +85,9 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
 
   // ─── Listen for incoming text ──────────────────────────────────────────────
   useEffect(() => {
-    const handleText = (data: { text: string; senderId: string; timestamp: number }) => {
+    const handleText = (data: { id: string; text: string; senderId: string; timestamp: number }) => {
       const msg: TextMessage = {
-        id: generateTransferId(),
+        id: data.id,   // ← use the sender's id so both sides share the same ID
         type: "text",
         text: data.text,
         senderId: data.senderId,
@@ -242,12 +242,29 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
       setRecordedBlobUrl(null);
     }
 
+    // Check HTTPS / secure context
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setMicError("Voice notes require a secure (HTTPS) connection.");
+      return;
+    }
+
     let stream: MediaStream;
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
-    } catch {
-      setMicError("Microphone access denied — enable it in browser settings to send voice notes.");
+    } catch (err) {
+      const error = err as DOMException;
+      if (error.name === "NotFoundError" || error.name === "DevicesNotFoundError") {
+        setMicError("No microphone found. Please connect a microphone and try again.");
+      } else if (error.name === "NotReadableError" || error.name === "TrackStartError") {
+        setMicError("Microphone is in use by another app. Close it and try again.");
+      } else if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
+        setMicError("Microphone access denied — enable it in browser settings to send voice notes.");
+      } else if (error.name === "OverconstrainedError") {
+        setMicError("Microphone constraints not satisfied. Try a different device.");
+      } else {
+        setMicError(`Could not access microphone: ${error.message || error.name}`);
+      }
       return;
     }
 
@@ -429,10 +446,11 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
 
     const trimmed = text.trim();
     if (trimmed) {
-      socket.emit("transfer:text", { roomId, text: trimmed, targetId: targetId === "all" ? undefined : targetId }, (res) => {
+      const msgId = generateTransferId(); // generate ONCE, shared with receiver
+      socket.emit("transfer:text", { roomId, id: msgId, text: trimmed, targetId: targetId === "all" ? undefined : targetId }, (res) => {
         if (res.success) {
           const msg: TextMessage = {
-            id: generateTransferId(),
+            id: msgId,   // ← same id the receiver will use
             type: "text",
             text: trimmed,
             senderId: socketId,

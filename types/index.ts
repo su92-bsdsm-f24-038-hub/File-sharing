@@ -71,6 +71,7 @@ export interface ServerToClientEvents {
   "room:state": (data: { devices: RoomDevice[] }) => void;
   "room:expired": (data: { reason: string }) => void;
   "transfer:text_received": (data: {
+    id: string;
     text: string;
     senderId: string;
     timestamp: number;
@@ -103,7 +104,7 @@ export interface ClientToServerEvents {
     callback: (res: { success: boolean; error?: string }) => void
   ) => void;
   "transfer:text": (
-    data: { roomId: string; text: string; targetId?: string },
+    data: { roomId: string; id: string; text: string; targetId?: string },
     callback: (res: { success: boolean; error?: string }) => void
   ) => void;
   "transfer:file_init": (

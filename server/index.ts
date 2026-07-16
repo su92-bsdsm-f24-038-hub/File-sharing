@@ -227,7 +227,7 @@ io.on("connection", (socket: Socket) => {
   socket.on(
     "transfer:text",
     (
-      { roomId, text, targetId }: { roomId: string; text: string; targetId?: string },
+      { roomId, id, text, targetId }: { roomId: string; id: string; text: string; targetId?: string },
       callback: (res: { success: boolean; error?: string }) => void
     ) => {
       const room = rooms.get(roomId);
@@ -235,10 +235,11 @@ io.on("connection", (socket: Socket) => {
         return callback({ success: false, error: "not_in_room" });
       }
 
-      const safe = text.slice(0, 10_000); // cap at 10k chars, rendered as plain text
+      const safe = text.slice(0, 10_000);
       resetRoomExpiry(room);
 
       const payload = {
+        id,
         text: safe,
         senderId: socket.id,
         timestamp: Date.now(),
