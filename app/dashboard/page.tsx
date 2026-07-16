@@ -154,7 +154,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-indigo-black flex items-center justify-center">
         <div className="flex flex-col gap-4 w-80">
           <LoadingSkeleton lines={3} />
         </div>
@@ -165,26 +165,26 @@ export default function DashboardPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden">
+    <div className="min-h-screen bg-indigo-black relative overflow-hidden">
       {/* Background */}
       <div className="pointer-events-none fixed inset-0 z-0">
-        <div className="absolute top-[-10%] left-[5%] w-[500px] h-[500px] rounded-full bg-violet-900/15 blur-[120px]" />
-        <div className="absolute bottom-[10%] right-[-5%] w-[400px] h-[400px] rounded-full bg-purple-900/10 blur-[120px]" />
+        <div className="absolute top-[-10%] left-[5%] w-[500px] h-[500px] rounded-full bg-primary-start/15 blur-[120px] animate-blob" />
+        <div className="absolute bottom-[10%] right-[-5%] w-[400px] h-[400px] rounded-full bg-cyan-accent/10 blur-[120px] animate-blob animation-delay-2000" />
       </div>
 
       {/* Header */}
-      <header className="relative z-10 border-b border-white/5 px-6 py-4">
+      <header className="relative z-10 border-b border-white/5 px-6 py-4 bg-white/[0.01] backdrop-blur-md">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-[0_0_15px_rgba(124,58,237,0.4)]">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-start to-primary-end flex items-center justify-center glow-primary">
               <Zap className="w-4 h-4 text-white" />
             </div>
-            <span className="font-bold tracking-tight">QuickDrop</span>
+            <span className="font-bold tracking-tight text-white">QuickDrop</span>
           </Link>
           <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-2 text-sm text-neutral-500">
-              <div className="w-7 h-7 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
-                <UserIcon className="w-3.5 h-3.5 text-purple-400" />
+            <div className="hidden sm:flex items-center gap-2 text-sm text-neutral-400">
+              <div className="w-7 h-7 rounded-full bg-primary-start/10 border border-primary-start/20 flex items-center justify-center">
+                <UserIcon className="w-3.5 h-3.5 text-primary-start" />
               </div>
               <span className="max-w-32 truncate">{user.displayName || user.email}</span>
             </div>
@@ -199,7 +199,7 @@ export default function DashboardPage() {
         {/* Title */}
         <div className="mb-10">
           <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-          <p className="text-neutral-500">
+          <p className="text-neutral-400">
             Generate a session, scan the QR on your phone, and start sharing instantly.
           </p>
         </div>
@@ -208,7 +208,7 @@ export default function DashboardPage() {
           {/* Left: Room panel */}
           <div className="lg:col-span-2 flex flex-col gap-5">
             {/* Session card */}
-            <GlassCard className="p-6" glow={status === "connected"}>
+            <GlassCard className="p-6" glowColor={status === "connected" ? "cyan" : "primary"} glow={status === "connected"}>
               <div className="flex items-center justify-between mb-5">
                 <h2 className="font-semibold text-sm text-neutral-300">Session</h2>
                 <ConnectionStatus status={status} expiresAt={expiresAt || undefined} />
@@ -228,7 +228,7 @@ export default function DashboardPage() {
                       <div className="p-4 rounded-2xl bg-white">
                         <QRCodeDisplay value={joinUrl} size={168} />
                       </div>
-                      <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-[0_0_12px_rgba(124,58,237,0.5)]">
+                      <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-xl bg-gradient-to-br from-primary-start to-primary-end flex items-center justify-center shadow-[0_0_12px_rgba(59,130,246,0.5)]">
                         <QrCode className="w-4 h-4 text-white" />
                       </div>
                     </motion.div>
@@ -265,14 +265,14 @@ export default function DashboardPage() {
                       {pin.split("").map((digit, i) => (
                         <div
                           key={i}
-                          className="w-12 h-14 rounded-xl bg-white/[0.06] border border-purple-500/20 flex items-center justify-center text-2xl font-black tracking-widest text-purple-300"
+                          className="w-12 h-14 rounded-xl bg-white/[0.06] border border-primary-start/20 flex items-center justify-center text-2xl font-black tracking-widest text-primary-start"
                         >
                           {digit}
                         </div>
                       ))}
                       <button
                         onClick={() => copyToClipboard(pin, "pin")}
-                        className="ml-1 p-2 rounded-xl text-neutral-600 hover:text-purple-400 hover:bg-purple-500/10 transition-all"
+                        className="ml-1 p-2 rounded-xl text-neutral-600 hover:text-primary-start hover:bg-primary-start/10 transition-all"
                         title="Copy PIN"
                       >
                         {copied === "pin" ? (
@@ -294,7 +294,7 @@ export default function DashboardPage() {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     onClick={() => copyToClipboard(joinUrl, "url")}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.03] border border-white/8 text-xs text-neutral-600 hover:text-neutral-400 hover:border-purple-500/20 transition-all mb-4"
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.03] border border-white/8 text-xs text-neutral-600 hover:text-neutral-400 hover:border-primary-start/20 transition-all mb-4"
                   >
                     <span className="truncate flex-1 text-left">{joinUrl}</span>
                     {copied === "url" ? (
@@ -341,7 +341,7 @@ export default function DashboardPage() {
             {/* Security card */}
             <GlassCard className="p-5">
               <div className="flex items-center gap-2 mb-3">
-                <Shield className="w-4 h-4 text-purple-400" />
+                <Shield className="w-4 h-4 text-cyan-accent" />
                 <span className="text-xs font-semibold text-neutral-400">Security</span>
               </div>
               <ul className="space-y-1.5">
@@ -391,11 +391,11 @@ export default function DashboardPage() {
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center gap-4 p-8">
                   <motion.div
-                    className="w-20 h-20 rounded-3xl bg-purple-500/5 border border-purple-500/10 flex items-center justify-center"
+                    className="w-20 h-20 rounded-3xl bg-primary-start/5 border border-primary-start/10 flex items-center justify-center"
                     animate={{ scale: [1, 1.04, 1] }}
                     transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                   >
-                    <QrCode className="w-9 h-9 text-purple-500/40" />
+                    <QrCode className="w-9 h-9 text-primary-start/40" />
                   </motion.div>
                   <p className="text-sm text-neutral-600 text-center max-w-56">
                     {status === "waiting"

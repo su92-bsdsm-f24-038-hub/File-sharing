@@ -5,7 +5,7 @@ interface ProgressBarProps {
   className?: string;
   showLabel?: boolean;
   size?: "sm" | "md";
-  color?: "purple" | "green" | "blue";
+  color?: "primary" | "emerald" | "cyan";
 }
 
 export function ProgressBar({
@@ -13,15 +13,15 @@ export function ProgressBar({
   className,
   showLabel = false,
   size = "md",
-  color = "purple",
+  color = "primary",
 }: ProgressBarProps) {
   const clamped = Math.min(100, Math.max(0, value));
 
   const heights = { sm: "h-1", md: "h-2" };
   const colors = {
-    purple: "from-violet-600 to-purple-400",
-    green: "from-emerald-600 to-green-400",
-    blue: "from-blue-600 to-sky-400",
+    primary: "from-primary-start to-primary-end",
+    emerald: "from-emerald-accent to-emerald-400",
+    cyan: "from-cyan-accent to-sky-400",
   };
 
   return (

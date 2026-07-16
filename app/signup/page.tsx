@@ -86,8 +86,8 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
       <div className="pointer-events-none fixed inset-0">
-        <div className="absolute top-[-10%] right-[15%] w-[450px] h-[450px] rounded-full bg-violet-900/20 blur-[120px]" />
-        <div className="absolute bottom-[-5%] left-[10%] w-[350px] h-[350px] rounded-full bg-fuchsia-900/15 blur-[100px]" />
+        <div className="absolute top-[-10%] right-[15%] w-[450px] h-[450px] rounded-full bg-primary-start/20 blur-[120px]" />
+        <div className="absolute bottom-[-5%] left-[10%] w-[350px] h-[350px] rounded-full bg-primary-end/15 blur-[100px]" />
       </div>
 
       <motion.div
@@ -98,7 +98,7 @@ export default function SignupPage() {
       >
         <div className="flex flex-col items-center mb-8">
           <Link href="/" className="flex items-center gap-2 mb-6">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-[0_0_20px_rgba(124,58,237,0.4)]">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-start to-primary-end flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.4)]">
               <Zap className="w-5 h-5 text-white" />
             </div>
             <span className="font-bold text-xl tracking-tight">QuickDrop</span>
@@ -107,7 +107,7 @@ export default function SignupPage() {
           <p className="text-sm text-neutral-500 mt-1">Free forever. No credit card.</p>
         </div>
 
-        <GlassCard className="p-8" glow>
+        <GlassCard className="p-8" glow glowColor="primary">
           <Button
             variant="secondary"
             className="w-full mb-6"
@@ -206,7 +206,7 @@ export default function SignupPage() {
 
           <p className="text-center text-sm text-neutral-600 mt-6">
             Already have an account?{" "}
-            <Link href="/login" className="text-purple-400 hover:text-purple-300 font-medium transition-colors">
+            <Link href="/login" className="text-primary-start hover:text-cyan-accent font-medium transition-colors">
               Sign in
             </Link>
           </p>

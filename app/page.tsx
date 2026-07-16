@@ -1,17 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
 import {
-  Zap, Shield, Wifi, QrCode, ArrowRight,
-  Smartphone, Laptop, FileText, Lock, Clock,
+  Zap, Shield, QrCode, ArrowRight,
+  Smartphone, Laptop, Lock
 } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
+import { FlowAnimationCard } from "@/components/ui/FlowAnimationCard";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
-  show: { opacity: 1, y: 0 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } },
 };
 
 const stagger = {
@@ -19,307 +21,245 @@ const stagger = {
 };
 
 export default function LandingPage() {
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePos({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
   return (
-    <div className="relative min-h-screen overflow-hidden bg-black">
-      {/* Background gradients */}
-      <div className="pointer-events-none fixed inset-0 z-0">
-        <div className="absolute top-[-20%] left-[10%] w-[600px] h-[600px] rounded-full bg-violet-900/20 blur-[120px]" />
-        <div className="absolute top-[30%] right-[-10%] w-[500px] h-[500px] rounded-full bg-purple-900/15 blur-[120px]" />
-        <div className="absolute bottom-[-10%] left-[30%] w-[400px] h-[400px] rounded-full bg-fuchsia-900/10 blur-[100px]" />
+    <div className="relative min-h-screen overflow-hidden bg-indigo-black">
+      {/* Cursor Follow Glow */}
+      <motion.div
+        className="pointer-events-none fixed inset-0 z-0 transition-opacity duration-300"
+        animate={{
+          background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(59, 130, 246, 0.08), transparent 40%)`,
+        }}
+      />
+
+      {/* Animated Gradient Mesh (Background) */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        <div className="absolute top-[-20%] left-[10%] w-[600px] h-[600px] rounded-full bg-primary-start/10 blur-[120px] animate-blob" />
+        <div className="absolute top-[30%] right-[-10%] w-[500px] h-[500px] rounded-full bg-cyan-accent/10 blur-[120px] animate-blob animation-delay-2000" />
+        <div className="absolute bottom-[-10%] left-[30%] w-[400px] h-[400px] rounded-full bg-primary-end/10 blur-[100px] animate-blob animation-delay-4000" />
       </div>
 
-      {/* Navbar */}
-      <nav className="relative z-10 flex items-center justify-between px-6 py-5 max-w-7xl mx-auto">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-[0_0_20px_rgba(124,58,237,0.4)]">
-            <Zap className="w-4 h-4 text-white" />
+      <AnimatePresence>
+        {/* Navbar */}
+        <nav className="relative z-10 flex items-center justify-between px-6 py-5 max-w-7xl mx-auto">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-start to-primary-end flex items-center justify-center glow-primary">
+              <Zap className="w-4 h-4 text-white" />
+            </div>
+            <span className="font-bold text-lg tracking-tight">QuickDrop</span>
           </div>
-          <span className="font-bold text-lg tracking-tight">QuickDrop</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link href="/join">
-            <Button variant="ghost" size="sm" className="text-purple-400">Enter Code</Button>
-          </Link>
-          <Link href="/login">
-            <Button variant="ghost" size="sm">Sign In</Button>
-          </Link>
-          <Link href="/signup">
-            <Button size="sm">Get Started</Button>
-          </Link>
-        </div>
-      </nav>
-
-      {/* Hero */}
-      <section className="relative z-10 pt-20 pb-32 px-6 max-w-5xl mx-auto text-center">
-        <motion.div
-          variants={stagger}
-          initial="hidden"
-          animate="show"
-          className="flex flex-col items-center gap-8"
-        >
-          <motion.div variants={fadeUp}>
-            <span className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold bg-purple-500/10 border border-purple-500/20 text-purple-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
-              Real-time · No cloud · No account on mobile
-            </span>
-          </motion.div>
-
-          <motion.h1
-            variants={fadeUp}
-            className="text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.05]"
-          >
-            Drop anything.
-            <br />
-            <span className="text-gradient">Instantly.</span>
-          </motion.h1>
-
-          <motion.p
-            variants={fadeUp}
-            className="max-w-xl text-lg text-neutral-400 leading-relaxed"
-          >
-            Scan a QR code to pair your phone with your laptop in seconds. Send
-            files, links, and text back and forth — no cables, no cloud upload,
-            no friction.
-          </motion.p>
-
-          <motion.div variants={fadeUp} className="flex items-center gap-4">
-            <Link href="/signup">
-              <Button size="lg" icon={<ArrowRight className="w-5 h-5" />}>
-                Start Sharing Free
-              </Button>
+          <div className="flex items-center gap-3">
+            <Link href="/join">
+              <Button variant="ghost" size="sm" className="text-primary-start">Enter Code</Button>
             </Link>
             <Link href="/login">
-              <Button variant="secondary" size="lg">
-                Sign In
-              </Button>
+              <Button variant="ghost" size="sm">Sign In</Button>
             </Link>
+            <Link href="/signup">
+              <Button size="sm">Get Started</Button>
+            </Link>
+          </div>
+        </nav>
+
+        {/* Hero */}
+        <section className="relative z-10 pt-20 pb-32 px-6 max-w-5xl mx-auto text-center">
+          <motion.div
+            variants={stagger}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-50px" }}
+            className="relative z-10 flex flex-col items-center gap-8 mt-12"
+          >
+            {/* The Signature Animation Component */}
+            <motion.div variants={fadeUp} className="w-full max-w-3xl mx-auto">
+              <FlowAnimationCard />
+            </motion.div>
+
+            <motion.div variants={fadeUp} className="mt-8">
+              <span className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold bg-emerald-accent/10 border border-emerald-accent/20 text-emerald-accent backdrop-blur-md">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-accent animate-pulse" />
+                Real-time · No cloud · Secure Peer-to-Peer
+              </span>
+            </motion.div>
+
+            <h1 className="text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.05]">
+              <motion.span
+                initial="off"
+                whileInView="on"
+                viewport={{ once: true }}
+                variants={{ off: {}, on: { transition: { staggerChildren: 0.1 } } }}
+                className="inline-block"
+              >
+                {"Drop anything.".split(" ").map((word, i) => (
+                  <motion.span key={`title1-${i}`} variants={{ off: { opacity: 0, x: -20 }, on: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 300, damping: 24 } } }} className="inline-block mr-4">
+                    {word}
+                  </motion.span>
+                ))}
+              </motion.span>
+              <br />
+              <motion.span
+                initial="off"
+                whileInView="on"
+                viewport={{ once: true }}
+                variants={{ off: {}, on: { transition: { staggerChildren: 0.1, delayChildren: 0.2 } } }}
+                className="text-gradient inline-block"
+              >
+                {"Instantly.".split(" ").map((word, i) => (
+                  <motion.span key={`title2-${i}`} variants={{ off: { opacity: 0, x: -20 }, on: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 300, damping: 24 } } }} className="inline-block mr-4">
+                    {word}
+                  </motion.span>
+                ))}
+              </motion.span>
+            </h1>
+
+            <motion.p
+              initial="off"
+              whileInView="on"
+              viewport={{ once: true }}
+              variants={{ off: {}, on: { transition: { staggerChildren: 0.02, delayChildren: 0.4 } } }}
+              className="max-w-xl text-lg text-neutral-400 leading-relaxed backdrop-blur-sm"
+            >
+              {"Scan a QR code to pair your phone with your laptop in seconds. Send files, links, and text back and forth — no cables, no cloud upload, no friction.".split(" ").map((word, i) => (
+                <motion.span key={`desc-${i}`} variants={{ off: { opacity: 0, y: 10 }, on: { opacity: 1, y: 0 } }} className="inline-block mr-1.5">
+                  {word}
+                </motion.span>
+              ))}
+            </motion.p>
+
+            <motion.div variants={fadeUp} className="flex items-center gap-4">
+              <Link href="/signup">
+                <Button size="lg" icon={<ArrowRight className="w-5 h-5" />}>
+                  Start Sharing Free
+                </Button>
+              </Link>
+              <Link href="/login">
+                <Button variant="secondary" size="lg">
+                  Sign In
+                </Button>
+              </Link>
+            </motion.div>
+          </motion.div>
+        </section>
+
+        {/* Features Bento Grid */}
+        <section className="relative z-10 py-24 px-6 max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl font-bold mb-4">Built for Speed & Privacy</h2>
+            <p className="text-neutral-400 max-w-md mx-auto">
+              Everything you need to move data securely without relying on third-party cloud servers.
+            </p>
           </motion.div>
 
-          {/* Animated hero illustration */}
-          <motion.div
-            variants={fadeUp}
-            className="relative mt-8 w-full max-w-2xl"
+          <motion.div 
+            className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-2 gap-4 auto-rows-[200px]"
+            variants={stagger}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-100px" }}
           >
-            <GlassCard className="p-8 glow-purple" glow>
-              <div className="flex items-center justify-center gap-12">
-                {/* Laptop */}
-                <div className="flex flex-col items-center gap-3">
-                  <div className="w-20 h-20 rounded-2xl bg-white/[0.05] border border-white/10 flex items-center justify-center">
-                    <Laptop className="w-9 h-9 text-purple-400" />
-                  </div>
-                  <span className="text-xs text-neutral-500">Your Laptop</span>
+            {/* Bento Card 1 (Large 2x2 highlight) */}
+            <motion.div variants={fadeUp} className="md:col-span-2 md:row-span-2">
+              <GlassCard className="h-full p-8 flex flex-col relative overflow-hidden" hover glowColor="primary">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-primary-start/10 rounded-full blur-[80px]" />
+                <div className="w-12 h-12 rounded-xl bg-white/[0.04] flex items-center justify-center mb-6 z-10">
+                  <Zap className="w-6 h-6 text-primary-start" />
                 </div>
+                <h3 className="text-2xl font-bold mb-3 z-10">Real-time Binary Transfer</h3>
+                <p className="text-neutral-400 leading-relaxed max-w-md z-10">
+                  Files travel as raw binary chunks over WebSockets, skipping base64 encoding entirely. 
+                  This makes transfers 33% smaller and significantly faster than traditional methods.
+                </p>
+                
+                <div className="mt-auto w-full z-10 flex items-center justify-center">
+                  <FlowAnimationCard className="w-full max-w-md scale-90 opacity-80" />
+                </div>
+              </GlassCard>
+            </motion.div>
 
-                {/* Animated connection */}
-                <div className="flex flex-col items-center gap-2">
-                  <div className="relative flex items-center gap-1">
-                    {[0, 1, 2, 3, 4].map((i) => (
-                      <motion.div
-                        key={i}
-                        className="w-2 h-2 rounded-full bg-purple-500"
-                        animate={{ opacity: [0.2, 1, 0.2], scale: [0.8, 1.2, 0.8] }}
-                        transition={{
-                          duration: 1.5,
-                          repeat: Infinity,
-                          delay: i * 0.2,
-                        }}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-[10px] text-purple-500/60 font-mono">WebSocket</span>
+            {/* Bento Card 2 */}
+            <motion.div variants={fadeUp} className="md:col-span-1 md:row-span-1">
+              <GlassCard className="h-full p-6 flex flex-col" hover glowColor="cyan">
+                <div className="w-10 h-10 rounded-xl bg-white/[0.04] flex items-center justify-center mb-4">
+                  <Shield className="w-5 h-5 text-cyan-accent" />
                 </div>
+                <h3 className="font-semibold text-lg mb-2">No Cloud Storage</h3>
+                <p className="text-sm text-neutral-400 leading-relaxed">
+                  Data flows directly peer-to-peer. Nothing is ever saved to a disk.
+                </p>
+              </GlassCard>
+            </motion.div>
 
-                {/* Phone */}
-                <div className="flex flex-col items-center gap-3">
-                  <div className="w-20 h-20 rounded-2xl bg-white/[0.05] border border-white/10 flex items-center justify-center">
-                    <Smartphone className="w-8 h-8 text-fuchsia-400" />
-                  </div>
-                  <span className="text-xs text-neutral-500">Your Phone</span>
+            {/* Bento Card 3 */}
+            <motion.div variants={fadeUp} className="md:col-span-1 md:row-span-1">
+              <GlassCard className="h-full p-6 flex flex-col" hover glowColor="emerald">
+                <div className="w-10 h-10 rounded-xl bg-white/[0.04] flex items-center justify-center mb-4">
+                  <Lock className="w-5 h-5 text-emerald-accent" />
                 </div>
-              </div>
+                <h3 className="font-semibold text-lg mb-2">Secure Rooms</h3>
+                <p className="text-sm text-neutral-400 leading-relaxed">
+                  Cryptographic UUIDs + 4-digit PINs ensure only you can access your session.
+                </p>
+              </GlassCard>
+            </motion.div>
+          </motion.div>
+        </section>
 
-              {/* QR mockup */}
-              <div className="mt-6 flex justify-center">
-                <div className="flex items-center gap-3 bg-white/[0.04] border border-purple-500/15 rounded-2xl px-5 py-3">
-                  <QrCode className="w-8 h-8 text-purple-400" />
-                  <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-neutral-200">Scan QR to pair</span>
-                    <span className="text-xs text-neutral-600">Opens in mobile browser</span>
-                  </div>
-                </div>
-              </div>
+        {/* CTA */}
+        <section className="relative z-10 py-24 px-6 max-w-3xl mx-auto text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <GlassCard className="p-16" glow glowColor="primary">
+              <h2 className="text-4xl font-extrabold mb-4">
+                Ready to <span className="text-gradient">QuickDrop?</span>
+              </h2>
+              <p className="text-neutral-400 mb-8 max-w-md mx-auto">
+                Create a free account, generate your first room, and share something in under 30 seconds.
+              </p>
+              <Link href="/signup">
+                <Button size="lg" icon={<ArrowRight className="w-5 h-5" />}>
+                  Create Free Account
+                </Button>
+              </Link>
             </GlassCard>
           </motion.div>
-        </motion.div>
-      </section>
+        </section>
 
-      {/* How it Works */}
-      <section className="relative z-10 py-24 px-6 max-w-6xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-4xl font-bold mb-4">How it Works</h2>
-          <p className="text-neutral-500 max-w-md mx-auto">
-            Three steps. No app install required on mobile.
-          </p>
-        </motion.div>
-
-        <div className="grid md:grid-cols-3 gap-6">
-          {[
-            {
-              step: "01",
-              icon: <QrCode className="w-6 h-6 text-purple-400" />,
-              title: "Generate a Room",
-              desc: "Sign in on your laptop and click 'New Session'. A QR code appears instantly with a secure room ID.",
-            },
-            {
-              step: "02",
-              icon: <Smartphone className="w-6 h-6 text-fuchsia-400" />,
-              title: "Scan on Your Phone",
-              desc: "Open your camera and scan the QR. No app download — it opens in your mobile browser automatically.",
-            },
-            {
-              step: "03",
-              icon: <FileText className="w-6 h-6 text-emerald-400" />,
-              title: "Send & Receive",
-              desc: "Drop files (up to 50 MB), send text or links. Both devices can send. Files transfer in real-time binary chunks.",
-            },
-          ].map((item, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.12 }}
-            >
-              <GlassCard className="p-7 h-full" hover>
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0">
-                    <span className="text-4xl font-black text-white/5 leading-none">
-                      {item.step}
-                    </span>
-                  </div>
-                </div>
-                <div className="mt-4 flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-white/[0.06] flex items-center justify-center">
-                    {item.icon}
-                  </div>
-                  <h3 className="text-lg font-semibold">{item.title}</h3>
-                </div>
-                <p className="text-sm text-neutral-500 leading-relaxed">{item.desc}</p>
-              </GlassCard>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* Features */}
-      <section className="relative z-10 py-24 px-6 max-w-6xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-4xl font-bold mb-4">Built for Speed & Privacy</h2>
-        </motion.div>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[
-            {
-              icon: <Zap className="w-5 h-5 text-yellow-400" />,
-              title: "Binary WebSocket Transfer",
-              desc: "Files travel as raw binary chunks, not base64 — 33% smaller, faster transfers.",
-            },
-            {
-              icon: <Lock className="w-5 h-5 text-purple-400" />,
-              title: "Cryptographic Room IDs",
-              desc: "UUID v4 room IDs with a 4-digit PIN. Max 2 devices per room. Third join attempts are rejected.",
-            },
-            {
-              icon: <Clock className="w-5 h-5 text-blue-400" />,
-              title: "Auto-Expiring Sessions",
-              desc: "Rooms self-destruct after 5 minutes of inactivity. All data is in-memory — nothing persists.",
-            },
-            {
-              icon: <Shield className="w-5 h-5 text-emerald-400" />,
-              title: "No Cloud Storage",
-              desc: "Files never leave your local network. Transfers happen peer-to-peer via your local WebSocket server.",
-            },
-            {
-              icon: <Wifi className="w-5 h-5 text-fuchsia-400" />,
-              title: "Live Progress Tracking",
-              desc: "Real progress bars driven by actual chunk acknowledgment — not fake timers.",
-            },
-            {
-              icon: <Smartphone className="w-5 h-5 text-sky-400" />,
-              title: "Mobile-First UI",
-              desc: "The join page is optimized for phone screens. No pinch-to-zoom, no tiny buttons.",
-            },
-          ].map((f, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.08 }}
-            >
-              <GlassCard className="p-6" hover>
-                <div className="w-10 h-10 rounded-xl bg-white/[0.04] flex items-center justify-center mb-4">
-                  {f.icon}
-                </div>
-                <h3 className="font-semibold text-sm mb-2">{f.title}</h3>
-                <p className="text-xs text-neutral-500 leading-relaxed">{f.desc}</p>
-              </GlassCard>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="relative z-10 py-24 px-6 max-w-3xl mx-auto text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-        >
-          <GlassCard className="p-16" glow>
-            <h2 className="text-4xl font-extrabold mb-4">
-              Ready to <span className="text-gradient">QuickDrop?</span>
-            </h2>
-            <p className="text-neutral-500 mb-8 max-w-md mx-auto">
-              Create a free account, generate your first room, and share something in under 30 seconds.
-            </p>
-            <Link href="/signup">
-              <Button size="lg" icon={<ArrowRight className="w-5 h-5" />}>
-                Create Free Account
-              </Button>
-            </Link>
-          </GlassCard>
-        </motion.div>
-      </section>
-
-      {/* Footer */}
-      <footer className="relative z-10 border-t border-white/5 py-8 px-6">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-              <Zap className="w-3 h-3 text-white" />
+        {/* Footer */}
+        <footer className="relative z-10 border-t border-white/5 py-8 px-6 mt-12">
+          <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-primary-start to-primary-end flex items-center justify-center">
+                <Zap className="w-3 h-3 text-white" />
+              </div>
+              <span className="font-semibold text-sm">QuickDrop</span>
             </div>
-            <span className="font-semibold text-sm">QuickDrop</span>
+            <p className="text-xs text-neutral-600">
+              Local-only · No data leaves your machine · Built with Next.js + Socket.IO
+            </p>
+            <div className="flex items-center gap-4 text-xs text-neutral-500">
+              <Link href="/login" className="hover:text-cyan-accent transition-colors">Login</Link>
+              <Link href="/signup" className="hover:text-primary-end transition-colors">Sign Up</Link>
+            </div>
           </div>
-          <p className="text-xs text-neutral-700">
-            Local-only · No data leaves your machine · Built with Next.js + Socket.IO
-          </p>
-          <div className="flex items-center gap-4 text-xs text-neutral-700">
-            <Link href="/login" className="hover:text-neutral-400 transition-colors">Login</Link>
-            <Link href="/signup" className="hover:text-neutral-400 transition-colors">Sign Up</Link>
-          </div>
-        </div>
-      </footer>
+        </footer>
+      </AnimatePresence>
     </div>
   );
 }

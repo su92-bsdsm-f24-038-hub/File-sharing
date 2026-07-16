@@ -48,7 +48,7 @@ export function TextMessageBubble({ message, onReact }: TextMessageProps) {
         <GlassCard
           className={`px-4 py-3 ${
             message.isSelf
-              ? "bg-purple-600/20 border-purple-500/25"
+              ? "bg-primary-start/20 border-primary-start/25"
               : "bg-white/[0.04] border-white/10"
           }`}
         >
@@ -64,7 +64,7 @@ export function TextMessageBubble({ message, onReact }: TextMessageProps) {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 key={emoji}
-                className="px-1.5 py-0.5 rounded-full bg-black/80 border border-purple-500/30 text-xs flex items-center gap-1 shadow-[0_2px_8px_rgba(124,58,237,0.2)] backdrop-blur-md"
+                className="px-1.5 py-0.5 rounded-full bg-black/80 border border-primary-start/30 text-xs flex items-center gap-1 shadow-[0_2px_8px_rgba(59,130,246,0.2)] backdrop-blur-md"
               >
                 <span>{emoji}</span>
                 {count > 1 && <span className="text-[10px] text-neutral-300 font-medium">{count}</span>}
@@ -84,7 +84,7 @@ export function TextMessageBubble({ message, onReact }: TextMessageProps) {
           </span>
           <button
             onClick={handleCopy}
-            className="text-[10px] text-neutral-500 hover:text-purple-400 transition-colors flex items-center gap-0.5"
+            className="text-[10px] text-neutral-500 hover:text-primary-start transition-colors flex items-center gap-0.5"
             title="Copy text"
           >
             {copied ? (
@@ -96,7 +96,7 @@ export function TextMessageBubble({ message, onReact }: TextMessageProps) {
           <div className="relative">
             <button
               onClick={() => setShowPicker(!showPicker)}
-              className="text-[10px] text-neutral-500 hover:text-purple-400 transition-colors flex items-center justify-center w-5 h-5 rounded hover:bg-white/5"
+              className="text-[10px] text-neutral-500 hover:text-primary-start transition-colors flex items-center justify-center w-5 h-5 rounded hover:bg-white/5"
               title="React"
             >
               <Smile className="w-3.5 h-3.5" />

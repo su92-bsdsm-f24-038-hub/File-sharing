@@ -120,19 +120,19 @@ function JoinPageInner() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex flex-col relative overflow-hidden">
-      {/* Background */}
-      <div className="pointer-events-none fixed inset-0">
-        <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-violet-900/15 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] rounded-full bg-fuchsia-900/10 blur-[100px]" />
+    <div className="min-h-screen bg-indigo-black flex flex-col relative overflow-hidden">
+      {/* Animated Gradient Mesh */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-primary-start/10 blur-[120px] animate-blob" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] rounded-full bg-cyan-accent/10 blur-[100px] animate-blob animation-delay-2000" />
       </div>
 
       {/* Header */}
-      <header className="relative z-10 px-5 py-4 flex items-center gap-2 border-b border-white/5">
-        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-[0_0_12px_rgba(124,58,237,0.4)]">
+      <header className="relative z-10 px-5 py-4 flex items-center gap-2 border-b border-white/5 bg-white/[0.01] backdrop-blur-md">
+        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary-start to-primary-end flex items-center justify-center glow-primary">
           <Zap className="w-3.5 h-3.5 text-white" />
         </div>
-        <span className="font-bold text-sm tracking-tight">QuickDrop</span>
+        <span className="font-bold text-sm tracking-tight text-white">QuickDrop</span>
         <div className="ml-auto">
           <ConnectionStatus status={status} />
         </div>
@@ -151,16 +151,16 @@ function JoinPageInner() {
               className="w-full max-w-sm"
             >
               <div className="text-center mb-8">
-                <div className="w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mx-auto mb-4">
-                  <KeyRound className="w-7 h-7 text-purple-400" />
+                <div className="w-16 h-16 rounded-2xl bg-primary-start/10 border border-primary-start/20 flex items-center justify-center mx-auto mb-4">
+                  <KeyRound className="w-7 h-7 text-primary-start" />
                 </div>
                 <h1 className="text-2xl font-bold mb-2">Enter PIN</h1>
-                <p className="text-sm text-neutral-500">
+                <p className="text-sm text-neutral-400">
                   Enter the 4-digit PIN shown on the laptop to connect.
                 </p>
               </div>
 
-              <GlassCard className="p-6" glow>
+              <GlassCard className="p-6" glow glowColor="primary">
                 <form onSubmit={handleSubmit(onSubmitPin)} className="flex flex-col gap-4" noValidate>
                   <Input
                     id="join-pin"
@@ -171,7 +171,7 @@ function JoinPageInner() {
                     label="4-digit PIN"
                     placeholder="1234"
                     error={errors.pin?.message}
-                    className="text-center text-2xl font-black tracking-[0.5em] h-16"
+                    className="text-center text-2xl font-black tracking-[0.5em] h-16 bg-white/[0.04] focus:border-primary-start"
                     {...register("pin")}
                   />
                   <Button type="submit" className="w-full" loading={isSubmitting}>
@@ -180,9 +180,9 @@ function JoinPageInner() {
                 </form>
 
                 <div className="mt-5 pt-5 border-t border-white/5">
-                  <p className="text-xs text-neutral-700 text-center">
+                  <p className="text-xs text-neutral-500 text-center">
                     Room:{" "}
-                    <span className="text-neutral-500 font-mono">
+                    <span className="text-neutral-400 font-mono">
                       {roomId?.slice(0, 8)}…
                     </span>
                   </p>
@@ -200,15 +200,15 @@ function JoinPageInner() {
               exit={{ opacity: 0 }}
               className="flex flex-col items-center gap-4"
             >
-              <div className="w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+              <div className="w-16 h-16 rounded-2xl bg-cyan-accent/10 border border-cyan-accent/20 flex items-center justify-center relative overflow-hidden">
                 <motion.div
+                  className="absolute inset-0 border-[3px] border-transparent border-t-cyan-accent rounded-2xl"
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                >
-                  <Wifi className="w-7 h-7 text-purple-400" />
-                </motion.div>
+                />
+                <Wifi className="w-7 h-7 text-cyan-accent" />
               </div>
-              <p className="text-neutral-400 text-sm">Connecting to room…</p>
+              <p className="text-cyan-accent text-sm font-medium">Connecting to room…</p>
             </motion.div>
           )}
 
@@ -222,15 +222,17 @@ function JoinPageInner() {
               style={{ height: "calc(100vh - 120px)" }}
             >
               <GlassCard
-                className="flex flex-col overflow-hidden"
+                className="flex flex-col overflow-hidden border-cyan-accent/20"
                 style={{ height: "100%" } as React.CSSProperties}
+                glowColor="cyan"
               >
-                <div className="px-4 py-3 border-b border-white/5 flex items-center gap-2">
-                  <span className="relative flex h-2.5 w-2.5">
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400" />
+                <div className="px-4 py-3 border-b border-white/5 flex items-center gap-2 bg-white/[0.02]">
+                  <span className="relative flex h-2.5 w-2.5 items-center justify-center">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-accent opacity-75 animate-ping" />
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-accent" />
                   </span>
-                  <span className="text-sm font-medium">Connected ✓</span>
-                  <span className="text-xs text-neutral-600 ml-auto font-mono">
+                  <span className="text-sm font-medium text-cyan-accent">Connected ✓</span>
+                  <span className="text-xs text-neutral-500 ml-auto font-mono">
                     {roomId?.slice(0, 8)}…
                   </span>
                 </div>
@@ -295,7 +297,7 @@ export default function JoinPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-black flex items-center justify-center">
-          <div className="w-8 h-8 rounded-full border-2 border-purple-500 border-t-transparent animate-spin" />
+          <div className="w-8 h-8 rounded-full border-2 border-primary-start border-t-transparent animate-spin" />
         </div>
       }
     >

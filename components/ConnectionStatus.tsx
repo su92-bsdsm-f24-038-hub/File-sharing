@@ -14,7 +14,7 @@ export function ConnectionStatus({ status, expiresAt }: ConnectionStatusProps) {
     idle: { label: "Not started", color: "bg-neutral-600", pulse: false },
     creating: { label: "Creating room…", color: "bg-yellow-500", pulse: true },
     waiting: { label: "Waiting for device…", color: "bg-yellow-400", pulse: true },
-    connected: { label: "Connected", color: "bg-emerald-400", pulse: false },
+    connected: { label: "Connected", color: "bg-emerald-accent", pulse: false },
     expired: { label: "Session expired", color: "bg-red-500", pulse: false },
     error: { label: "Error", color: "bg-red-500", pulse: false },
   };

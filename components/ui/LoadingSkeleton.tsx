@@ -12,7 +12,7 @@ export function LoadingSkeleton({ className, lines = 1 }: LoadingSkeletonProps) 
         <div
           key={i}
           className={cn(
-            "rounded-xl bg-white/[0.05] animate-pulse",
+            "rounded-xl gradient-skeleton",
             i === 0 ? "h-6 w-3/4" : i === lines - 1 ? "h-4 w-1/2" : "h-4 w-full"
           )}
         />
@@ -23,8 +23,8 @@ export function LoadingSkeleton({ className, lines = 1 }: LoadingSkeletonProps) 
 
 export function QRSkeleton() {
   return (
-    <div className="w-48 h-48 rounded-2xl bg-white/[0.04] animate-pulse flex items-center justify-center border border-purple-500/10">
-      <div className="w-8 h-8 rounded-lg bg-purple-500/20 animate-pulse" />
+    <div className="w-48 h-48 rounded-2xl gradient-skeleton flex items-center justify-center border border-primary-start/10">
+      <div className="w-8 h-8 rounded-lg bg-primary-start/20 animate-pulse" />
     </div>
   );
 }
@@ -36,7 +36,7 @@ export function MessageSkeleton() {
         <div
           key={i}
           className={cn(
-            "h-10 rounded-2xl bg-white/[0.04] animate-pulse",
+            "h-10 rounded-2xl gradient-skeleton",
             i % 2 === 0 ? "self-start" : "self-end"
           )}
           style={{ width: `${w * 100}%` }}

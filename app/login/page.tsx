@@ -79,8 +79,8 @@ export default function LoginPage() {
     <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background */}
       <div className="pointer-events-none fixed inset-0">
-        <div className="absolute top-[-10%] left-[20%] w-[400px] h-[400px] rounded-full bg-violet-900/20 blur-[100px]" />
-        <div className="absolute bottom-[-10%] right-[10%] w-[350px] h-[350px] rounded-full bg-purple-900/15 blur-[100px]" />
+        <div className="absolute top-[-10%] left-[20%] w-[400px] h-[400px] rounded-full bg-primary-start/20 blur-[100px]" />
+        <div className="absolute bottom-[-10%] right-[10%] w-[350px] h-[350px] rounded-full bg-primary-end/15 blur-[100px]" />
       </div>
 
       <motion.div
@@ -92,7 +92,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
           <Link href="/" className="flex items-center gap-2 mb-6">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-[0_0_20px_rgba(124,58,237,0.4)]">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-start to-primary-end flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.4)]">
               <Zap className="w-5 h-5 text-white" />
             </div>
             <span className="font-bold text-xl tracking-tight">QuickDrop</span>
@@ -101,7 +101,7 @@ export default function LoginPage() {
           <p className="text-sm text-neutral-500 mt-1">Sign in to your account</p>
         </div>
 
-        <GlassCard className="p-8" glow>
+        <GlassCard className="p-8" glow glowColor="primary">
           {/* Google */}
           <Button
             variant="secondary"
@@ -159,14 +159,14 @@ export default function LoginPage() {
                 <input
                   type="checkbox"
                   id="rememberMe"
-                  className="rounded border-white/20 bg-white/[0.04] text-purple-500 focus:ring-purple-500/40"
+                  className="rounded border-white/20 bg-white/[0.04] text-primary-start focus:ring-primary-start/40"
                   {...register("rememberMe")}
                 />
                 <span className="text-xs text-neutral-400">Remember me</span>
               </label>
               <Link
                 href="/forgot-password"
-                className="text-xs text-purple-400 hover:text-purple-300 transition-colors"
+                className="text-xs text-primary-start hover:text-cyan-accent transition-colors"
               >
                 Forgot password?
               </Link>
@@ -189,7 +189,7 @@ export default function LoginPage() {
 
           <p className="text-center text-sm text-neutral-600 mt-6">
             Don&apos;t have an account?{" "}
-            <Link href="/signup" className="text-purple-400 hover:text-purple-300 font-medium transition-colors">
+            <Link href="/signup" className="text-primary-start hover:text-cyan-accent font-medium transition-colors">
               Sign up
             </Link>
           </p>

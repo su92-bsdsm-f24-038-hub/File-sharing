@@ -24,10 +24,10 @@ function getFileIcon(fileType: string) {
 }
 
 function getFileColor(fileType: string) {
-  if (fileType.startsWith("image/")) return "text-sky-400";
+  if (fileType.startsWith("image/")) return "text-cyan-accent";
   if (fileType.startsWith("audio/")) return "text-emerald-400";
   if (fileType.startsWith("video/")) return "text-rose-400";
-  return "text-purple-400";
+  return "text-primary-start";
 }
 
 export function FileMessageCard({ file, onReact }: FileMessageProps) {
@@ -66,7 +66,7 @@ export function FileMessageCard({ file, onReact }: FileMessageProps) {
           <GlassCard
             className={`p-3 ${
               file.isSelf
-                ? "bg-purple-600/10 border-purple-500/20"
+                ? "bg-primary-start/10 border-primary-start/20"
                 : "bg-white/[0.03] border-white/8"
             }`}
           >
@@ -85,7 +85,7 @@ export function FileMessageCard({ file, onReact }: FileMessageProps) {
                     src={file.blobUrl}
                     controls
                     className="w-full h-8"
-                    style={{ accentColor: "#a855f7" }}
+                    style={{ accentColor: "#3B82F6" }}
                   />
                 ) : (
                   <div className="h-8 bg-white/5 rounded-lg animate-pulse flex items-center justify-center">
@@ -110,7 +110,7 @@ export function FileMessageCard({ file, onReact }: FileMessageProps) {
                   key={emoji}
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="px-1.5 py-0.5 rounded-full bg-black/80 border border-purple-500/30 text-xs flex items-center gap-1 shadow-[0_2px_8px_rgba(124,58,237,0.2)] backdrop-blur-md"
+                  className="px-1.5 py-0.5 rounded-full bg-black/80 border border-primary-start/30 text-xs flex items-center gap-1 shadow-[0_2px_8px_rgba(59,130,246,0.2)] backdrop-blur-md"
                 >
                   <span>{emoji}</span>
                   {count > 1 && <span className="text-[10px] text-neutral-300 font-medium">{count}</span>}
@@ -124,7 +124,7 @@ export function FileMessageCard({ file, onReact }: FileMessageProps) {
             <div className="relative">
               <button
                 onClick={() => setShowPicker(!showPicker)}
-                className="text-neutral-500 hover:text-purple-400 transition-colors flex items-center justify-center w-5 h-5 rounded hover:bg-white/5"
+                className="text-neutral-500 hover:text-primary-start transition-colors flex items-center justify-center w-5 h-5 rounded hover:bg-white/5"
                 title="React"
               >
                 <Smile className="w-3.5 h-3.5" />
@@ -158,7 +158,7 @@ export function FileMessageCard({ file, onReact }: FileMessageProps) {
         <GlassCard
           className={`p-4 ${
             file.isSelf
-              ? "bg-purple-600/10 border-purple-500/20"
+              ? "bg-primary-start/10 border-primary-start/20"
               : "bg-white/[0.03] border-white/8"
           }`}
         >
@@ -181,7 +181,7 @@ export function FileMessageCard({ file, onReact }: FileMessageProps) {
                   <ProgressBar
                     value={progress}
                     size="sm"
-                    color={isSending ? "purple" : "blue"}
+                    color={isSending ? "primary" : "emerald"}
                   />
                   <p className="text-[10px] text-neutral-600 mt-1 tabular-nums">
                     {isSending
@@ -198,7 +198,7 @@ export function FileMessageCard({ file, onReact }: FileMessageProps) {
                 <a
                   href={file.blobUrl}
                   download={file.fileName}
-                  className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-purple-400 hover:text-purple-300 transition-colors"
+                  className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-primary-start hover:text-cyan-accent transition-colors"
                 >
                   <Download className="w-3.5 h-3.5" />
                   Download
@@ -235,7 +235,7 @@ export function FileMessageCard({ file, onReact }: FileMessageProps) {
               {/* Video buffering skeleton */}
               {!isComplete && isIncoming && file.fileType.startsWith("video/") && (
                 <div className="mt-3 rounded-xl overflow-hidden border border-white/10 bg-white/5 animate-pulse h-32 flex items-center justify-center">
-                  <div className="w-6 h-6 rounded-full border-2 border-purple-400 border-t-transparent animate-spin" />
+                  <div className="w-6 h-6 rounded-full border-2 border-primary-start border-t-transparent animate-spin" />
                 </div>
               )}
             </div>
@@ -250,7 +250,7 @@ export function FileMessageCard({ file, onReact }: FileMessageProps) {
                 key={emoji}
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="px-1.5 py-0.5 rounded-full bg-black/80 border border-purple-500/30 text-xs flex items-center gap-1 shadow-[0_2px_8px_rgba(124,58,237,0.2)] backdrop-blur-md"
+                className="px-1.5 py-0.5 rounded-full bg-black/80 border border-primary-start/30 text-xs flex items-center gap-1 shadow-[0_2px_8px_rgba(59,130,246,0.2)] backdrop-blur-md"
               >
                 <span>{emoji}</span>
                 {count > 1 && <span className="text-[10px] text-neutral-300 font-medium">{count}</span>}
@@ -264,7 +264,7 @@ export function FileMessageCard({ file, onReact }: FileMessageProps) {
           <div className="relative">
             <button
               onClick={() => setShowPicker(!showPicker)}
-              className="text-neutral-500 hover:text-purple-400 transition-colors flex items-center justify-center w-5 h-5 rounded hover:bg-white/5"
+              className="text-neutral-500 hover:text-primary-start transition-colors flex items-center justify-center w-5 h-5 rounded hover:bg-white/5"
               title="React"
             >
               <Smile className="w-3.5 h-3.5" />

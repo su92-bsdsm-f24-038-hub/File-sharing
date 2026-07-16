@@ -504,38 +504,50 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
       <div className="px-4 py-3 border-b border-white/5 bg-white/[0.02]">
         <h3 className="text-xs font-medium text-neutral-400 mb-2 uppercase tracking-wider">Connected Devices</h3>
         <div className="flex flex-wrap gap-2">
-          <button
+          <motion.button
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
             onClick={() => setTargetId("all")}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm transition-colors ${
               targetId === "all"
-                ? "bg-purple-500/20 border-purple-500/50 text-purple-100"
+                ? "bg-primary-start/20 border-primary-start/50 text-white"
                 : "bg-white/[0.03] border-white/10 text-neutral-400 hover:bg-white/[0.06]"
             }`}
           >
-            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <div className="w-2 h-2 rounded-full bg-emerald-accent animate-pulse" />
             Send to All
-          </button>
+          </motion.button>
 
-          {connectedDevices.filter((d) => d.socketId !== socketId).map((device) => {
-            const isSelected = targetId === device.socketId;
-            const Icon = device.deviceType === "mobile" ? Smartphone : device.deviceType === "tablet" ? Tablet : Monitor;
+          <AnimatePresence>
+            {connectedDevices.filter((d) => d.socketId !== socketId).map((device) => {
+              const isSelected = targetId === device.socketId;
+              const Icon = device.deviceType === "mobile" ? Smartphone : device.deviceType === "tablet" ? Tablet : Monitor;
 
-            return (
-              <button
-                key={device.socketId}
-                onClick={() => setTargetId(device.socketId)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm transition-colors ${
-                  isSelected
-                    ? "bg-purple-500/20 border-purple-500/50 text-purple-100"
-                    : "bg-white/[0.03] border-white/10 text-neutral-400 hover:bg-white/[0.06]"
-                }`}
-              >
-                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <Icon className="w-3.5 h-3.5" />
-                <span className="max-w-24 truncate">{device.deviceName}</span>
-              </button>
-            );
-          })}
+              return (
+                <motion.button
+                  key={device.socketId}
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.8, opacity: 0 }}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  onClick={() => setTargetId(device.socketId)}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm transition-colors ${
+                    isSelected
+                      ? "bg-primary-start/20 border-primary-start/50 text-white"
+                      : "bg-white/[0.03] border-white/10 text-neutral-400 hover:bg-white/[0.06]"
+                  }`}
+                >
+                  <div className="w-2 h-2 rounded-full bg-emerald-accent animate-pulse" />
+                  <Icon className="w-3.5 h-3.5" />
+                  <span className="max-w-24 truncate">{device.deviceName}</span>
+                </motion.button>
+              );
+            })}
+          </AnimatePresence>
         </div>
       </div>
 
@@ -546,19 +558,30 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               className="flex flex-col items-center justify-center h-32 gap-2"
             >
-              <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center">
-                <Send className="w-5 h-5 text-purple-400/50" />
+              <div className="w-12 h-12 rounded-2xl bg-primary-start/10 flex items-center justify-center">
+                <Send className="w-5 h-5 text-primary-start/70" />
               </div>
               <p className="text-sm text-neutral-600">Send a file or message to get started</p>
             </motion.div>
           )}
           {messages.map((msg) => {
-            if ("text" in msg) {
-              return <TextMessageBubble key={msg.id} message={msg} onReact={handleReact} />;
-            }
-            return <FileMessageCard key={msg.transferId} file={msg as FileProgress} onReact={handleReact} />;
+            const key = "text" in msg ? msg.id : msg.transferId;
+            return (
+              <motion.div
+                key={key}
+                initial={{ opacity: 0, x: msg.isSelf ? 20 : -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+              >
+                {"text" in msg 
+                  ? <TextMessageBubble message={msg} onReact={handleReact} />
+                  : <FileMessageCard file={msg as FileProgress} onReact={handleReact} />
+                }
+              </motion.div>
+            );
           })}
         </AnimatePresence>
         <div ref={bottomRef} />
@@ -589,13 +612,13 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}
-            className="mx-4 mb-2 p-3 rounded-xl bg-white/[0.04] border border-emerald-500/30 flex items-center gap-3"
+            className="mx-4 mb-2 p-3 rounded-xl bg-white/[0.04] border border-cyan-accent/30 flex items-center gap-3"
           >
-            <div className="w-8 h-8 rounded-full bg-emerald-500/15 flex items-center justify-center text-emerald-400 flex-shrink-0">
+            <div className="w-8 h-8 rounded-full bg-cyan-accent/15 flex items-center justify-center text-cyan-accent flex-shrink-0">
               <Mic className="w-4 h-4" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-emerald-400 font-semibold mb-1">Voice note · {formatTime(recordingSeconds)}</p>
+              <p className="text-xs text-cyan-accent font-semibold mb-1">Voice note · {formatTime(recordingSeconds)}</p>
               <audio
                 ref={previewAudioRef}
                 src={recordedBlobUrl}
@@ -640,8 +663,8 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
               className="flex flex-wrap gap-2 mb-2"
             >
               {pendingFiles.map((f, i) => (
-                <div key={i} className="flex items-center gap-1.5 bg-purple-500/10 border border-purple-500/20 px-2.5 py-1.5 rounded-lg">
-                  <Paperclip className="w-3.5 h-3.5 text-purple-400" />
+                <div key={i} className="flex items-center gap-1.5 bg-primary-start/10 border border-primary-start/20 px-2.5 py-1.5 rounded-lg">
+                  <Paperclip className="w-3.5 h-3.5 text-primary-start" />
                   <span className="text-xs text-neutral-300 max-w-32 truncate">{f.name}</span>
                   <button
                     onClick={() => setPendingFiles((prev) => prev.filter((_, index) => index !== i))}
@@ -690,7 +713,7 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={isSendingFile || isRecording}
-            className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-neutral-500 hover:text-purple-400 hover:bg-purple-500/10 transition-all disabled:opacity-40"
+            className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-neutral-500 hover:text-primary-start hover:bg-primary-start/10 transition-all disabled:opacity-40"
             title="Attach file"
           >
             <Paperclip className="w-4.5 h-4.5" />
@@ -715,7 +738,7 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
             className={`flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-all disabled:opacity-40 ${
               isRecording
                 ? "bg-red-500/20 border border-red-500/40 text-red-400 hover:bg-red-500/30"
-                : "text-neutral-500 hover:text-emerald-400 hover:bg-emerald-500/10"
+                : "text-neutral-500 hover:text-cyan-accent hover:bg-cyan-accent/10"
             }`}
             title={isRecording ? "Stop recording" : "Record voice note"}
           >

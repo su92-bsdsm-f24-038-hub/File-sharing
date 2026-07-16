@@ -1,8 +1,11 @@
 import { cn } from "@/lib/utils";
 import { ButtonHTMLAttributes, forwardRef, ReactNode } from "react";
 import { Loader2 } from "lucide-react";
+import { motion, HTMLMotionProps } from "framer-motion";
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+type MotionButtonProps = HTMLMotionProps<"button">;
+
+interface ButtonProps extends Omit<MotionButtonProps, "children"> {
   variant?: "primary" | "secondary" | "ghost" | "danger";
   size?: "sm" | "md" | "lg";
   loading?: boolean;
@@ -13,13 +16,13 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = "primary", size = "md", loading = false, icon, children, className, disabled, ...props }, ref) => {
     const base =
-      "inline-flex items-center justify-center gap-2 font-semibold rounded-2xl transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100";
+      "inline-flex items-center justify-center gap-2 font-semibold rounded-2xl transition-all duration-200 focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed";
 
     const variants = {
       primary:
-        "bg-gradient-to-r from-violet-600 to-purple-500 text-white shadow-[0_4px_20px_rgba(124,58,237,0.4)] hover:shadow-[0_4px_30px_rgba(124,58,237,0.6)] hover:from-violet-500 hover:to-purple-400",
+        "bg-gradient-to-r from-primary-start to-primary-end text-white glow-primary hover:from-[#60A5FA] hover:to-[#22D3EE]",
       secondary:
-        "border border-purple-500/30 bg-purple-500/10 text-purple-300 hover:bg-purple-500/20 hover:border-purple-500/50",
+        "border border-primary-start/30 bg-primary-start/10 text-primary-start hover:bg-primary-start/20 hover:border-primary-start/50",
       ghost:
         "text-neutral-400 hover:text-white hover:bg-white/[0.06]",
       danger:
@@ -33,15 +36,18 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     return (
-      <button
+      <motion.button
         ref={ref}
         disabled={disabled || loading}
         className={cn(base, variants[variant], sizes[size], className)}
+        whileHover={disabled || loading ? {} : { scale: 1.03 }}
+        whileTap={disabled || loading ? {} : { scale: 0.97 }}
+        transition={{ type: "spring", stiffness: 400, damping: 25 }}
         {...props}
       >
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : icon}
         {children}
-      </button>
+      </motion.button>
     );
   }
 );
