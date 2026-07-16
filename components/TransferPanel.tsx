@@ -2,16 +2,24 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Paperclip, X, AlertCircle, Monitor, Smartphone, Tablet } from "lucide-react";
+import {
+  Send, Paperclip, X, AlertCircle, Monitor, Smartphone,
+  Tablet, Mic, MicOff, StopCircle, Play, Pause, Trash2,
+} from "lucide-react";
 import { Socket } from "socket.io-client";
-import { ServerToClientEvents, ClientToServerEvents, TransferMessage, FileProgress, TextMessage, RoomDevice } from "@/types";
+import {
+  ServerToClientEvents, ClientToServerEvents,
+  TransferMessage, FileProgress, TextMessage, RoomDevice,
+} from "@/types";
 import { TextMessageBubble } from "@/components/TextMessage";
 import { FileMessageCard } from "@/components/FileMessage";
 import { Button } from "@/components/ui/Button";
 import { generateTransferId } from "@/lib/utils";
+import { parseUserAgent } from "@/lib/utils";
 
 const CHUNK_SIZE = 256 * 1024; // 256 KB
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
+const MAX_RECORDING_SECONDS = 120; // 2 minutes
 
 interface TransferPanelProps {
   socket: Socket<ServerToClientEvents, ClientToServerEvents>;
@@ -32,12 +40,27 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
   const bottomRef = useRef<HTMLDivElement>(null);
   const chunkBuffers = useRef<Map<string, Uint8Array[]>>(new Map());
 
+  // ── Voice Note State ────────────────────────────────────────────────────────
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
+  const [recordedBlobUrl, setRecordedBlobUrl] = useState<string | null>(null);
+  const [micError, setMicError] = useState<string | null>(null);
+  const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<BlobPart[]>([]);
+  const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  const { deviceName } = parseUserAgent(navigator.userAgent);
+
   // ─── Scroll to bottom on new messages ─────────────────────────────────────
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // ─── Listen for room state ────────────────────────────────────────────────
+  // ─── Listen for room state ─────────────────────────────────────────────────
   useEffect(() => {
     const handleState = (data: { devices: RoomDevice[] }) => {
       setConnectedDevices(data.devices);
@@ -52,12 +75,13 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
     return () => { socket.off("room:state", handleState); };
   }, [socket]);
 
-  // ─── Cleanup Blob URLs ────────────────────────────────────────────────────
+  // ─── Cleanup Blob URLs ─────────────────────────────────────────────────────
   useEffect(() => {
     return () => {
       blobUrls.current.forEach((url) => URL.revokeObjectURL(url));
+      if (recordedBlobUrl) URL.revokeObjectURL(recordedBlobUrl);
     };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ─── Listen for incoming text ──────────────────────────────────────────────
   useEffect(() => {
@@ -69,6 +93,7 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
         senderId: data.senderId,
         isSelf: false,
         timestamp: data.timestamp,
+        reactions: [],
       };
       setMessages((prev) => [...prev, msg]);
     };
@@ -96,6 +121,7 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
         isSelf: false,
         senderId: data.senderId,
         timestamp: Date.now(),
+        reactions: [],
       };
       setMessages((prev) => [...prev, file]);
     };
@@ -161,66 +187,195 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
     return () => { socket.off("transfer:file_complete", handleComplete); };
   }, [socket]);
 
-  // ─── Sending handled via handleSend below ────────────────────────────────
+  // ─── Listen for reactions received ────────────────────────────────────────
+  useEffect(() => {
+    const handleReaction = (data: { messageId: string; emoji: string; deviceName: string }) => {
+      setMessages((prev) =>
+        prev.map((m) => {
+          const id = "id" in m ? m.id : m.transferId;
+          if (id === data.messageId) {
+            const existingReactions = m.reactions ?? [];
+            return { ...m, reactions: [...existingReactions, { emoji: data.emoji, deviceName: data.deviceName }] };
+          }
+          return m;
+        })
+      );
+    };
 
-  // ─── Send file ────────────────────────────────────────────────────────────
-  const sendFile = useCallback(async (file: File) => {
+    socket.on("transfer:reaction_received", handleReaction);
+    return () => { socket.off("transfer:reaction_received", handleReaction); };
+  }, [socket]);
+
+  // ─── Reactions: send + local state ────────────────────────────────────────
+  const handleReact = useCallback((messageId: string, emoji: string) => {
+    // Optimistically add to local state immediately
+    setMessages((prev) =>
+      prev.map((m) => {
+        const id = "id" in m ? m.id : m.transferId;
+        if (id === messageId) {
+          const existingReactions = m.reactions ?? [];
+          return { ...m, reactions: [...existingReactions, { emoji, deviceName }] };
+        }
+        return m;
+      })
+    );
+
+    // Send to the target (the original sender) or room
+    const msg = messages.find((m) => ("id" in m ? m.id : m.transferId) === messageId);
+    const sendTarget = msg ? msg.senderId : undefined;
+
+    socket.emit("transfer:react", {
+      roomId,
+      targetId: sendTarget,
+      messageId,
+      emoji,
+      deviceName,
+    }, () => {});
+  }, [socket, roomId, deviceName, messages]);
+
+  // ─── Voice Note: Start Recording ──────────────────────────────────────────
+  const startRecording = useCallback(async () => {
+    setMicError(null);
+    setRecordedBlob(null);
+    if (recordedBlobUrl) {
+      URL.revokeObjectURL(recordedBlobUrl);
+      setRecordedBlobUrl(null);
+    }
+
+    let stream: MediaStream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+    } catch {
+      setMicError("Microphone access denied — enable it in browser settings to send voice notes.");
+      return;
+    }
+
+    audioChunksRef.current = [];
+    const mimeType = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "audio/mp4";
+    const recorder = new MediaRecorder(stream, { mimeType });
+    mediaRecorderRef.current = recorder;
+
+    recorder.ondataavailable = (e) => {
+      if (e.data.size > 0) audioChunksRef.current.push(e.data);
+    };
+
+    recorder.onstop = () => {
+      const blob = new Blob(audioChunksRef.current, { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      setRecordedBlob(blob);
+      setRecordedBlobUrl(url);
+      stream.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    };
+
+    recorder.start();
+    setIsRecording(true);
+    setRecordingSeconds(0);
+
+    recordingTimerRef.current = setInterval(() => {
+      setRecordingSeconds((s) => {
+        if (s + 1 >= MAX_RECORDING_SECONDS) {
+          stopRecording();
+          return MAX_RECORDING_SECONDS;
+        }
+        return s + 1;
+      });
+    }, 1000);
+  }, [recordedBlobUrl]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const stopRecording = useCallback(() => {
+    if (recordingTimerRef.current) {
+      clearInterval(recordingTimerRef.current);
+      recordingTimerRef.current = null;
+    }
+    mediaRecorderRef.current?.stop();
+    setIsRecording(false);
+  }, []);
+
+  const discardRecording = useCallback(() => {
+    if (recordedBlobUrl) URL.revokeObjectURL(recordedBlobUrl);
+    setRecordedBlob(null);
+    setRecordedBlobUrl(null);
+    setRecordingSeconds(0);
+    previewAudioRef.current?.pause();
+  }, [recordedBlobUrl]);
+
+  const togglePreviewPlay = useCallback(() => {
+    if (!previewAudioRef.current) return;
+    if (isPreviewPlaying) {
+      previewAudioRef.current.pause();
+      setIsPreviewPlaying(false);
+    } else {
+      previewAudioRef.current.play();
+      setIsPreviewPlaying(true);
+    }
+  }, [isPreviewPlaying]);
+
+  const formatTime = (s: number) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+
+  // ─── Send file (also used for voice blobs) ────────────────────────────────
+  const sendFile = useCallback(async (file: File | Blob, overrideName?: string, overrideType?: string) => {
     setFileError(null);
 
-    if (file.size > MAX_FILE_SIZE) {
+    const name = overrideName ?? (file instanceof File ? file.name : `voice-note-${Date.now()}.webm`);
+    const type = overrideType ?? file.type ?? "audio/webm";
+    const size = file.size;
+
+    if (size > MAX_FILE_SIZE) {
       setFileError("File exceeds 50 MB limit.");
       return;
     }
 
     const transferId = generateTransferId();
-    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+    const totalChunks = Math.ceil(size / CHUNK_SIZE);
 
-    // Add outgoing file to messages immediately
     const outgoing: FileProgress = {
       transferId,
-      fileName: file.name,
-      fileType: file.type || "application/octet-stream",
-      fileSize: file.size,
+      fileName: name,
+      fileType: type,
+      fileSize: size,
       totalChunks,
       receivedChunks: 0,
       status: "sending",
       isSelf: true,
       senderId: socketId,
       timestamp: Date.now(),
+      reactions: [],
     };
     setMessages((prev) => [...prev, outgoing]);
     setIsSendingFile(true);
 
-    // Init transfer on server
     const initRes = await new Promise<{ success: boolean; error?: string }>((resolve) => {
       socket.emit("transfer:file_init", {
         roomId,
         transferId,
-        fileName: file.name,
-        fileType: file.type || "application/octet-stream",
-        fileSize: file.size,
+        fileName: name,
+        fileType: type,
+        fileSize: size,
         totalChunks,
         targetId: targetId === "all" ? undefined : targetId,
       }, resolve);
     });
 
     if (!initRes.success) {
-      setFileError(initRes.error === "file_type_not_allowed"
-        ? "File type not allowed."
-        : initRes.error === "file_too_large"
-        ? "File too large (max 50 MB)."
-        : "Failed to initiate transfer.");
+      setFileError(
+        initRes.error === "file_type_not_allowed"
+          ? "File type not allowed."
+          : initRes.error === "file_too_large"
+          ? "File too large (max 50 MB)."
+          : "Failed to initiate transfer."
+      );
       setMessages((prev) => prev.filter((m) => !("transferId" in m) || m.transferId !== transferId));
       setIsSendingFile(false);
       return;
     }
 
-    // Send chunks sequentially with ack-driven progress
     const arrayBuffer = await file.arrayBuffer();
 
     for (let i = 0; i < totalChunks; i++) {
       const start = i * CHUNK_SIZE;
-      const end = Math.min(start + CHUNK_SIZE, file.size);
+      const end = Math.min(start + CHUNK_SIZE, size);
       const chunk = arrayBuffer.slice(start, end);
 
       await new Promise<void>((resolve, reject) => {
@@ -232,7 +387,6 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
           targetId: targetId === "all" ? undefined : targetId,
         }, (ackRes) => {
           if (ackRes.success) {
-            // Update progress on outgoing card
             setMessages((prev) =>
               prev.map((m) => {
                 if ("transferId" in m && m.transferId === transferId) {
@@ -249,7 +403,6 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
       });
     }
 
-    // Mark as sent
     setMessages((prev) =>
       prev.map((m) => {
         if ("transferId" in m && m.transferId === transferId) {
@@ -261,6 +414,15 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
     setIsSendingFile(false);
   }, [socket, roomId, socketId, targetId]);
 
+  // ─── Send voice note ───────────────────────────────────────────────────────
+  const sendVoiceNote = useCallback(async () => {
+    if (!recordedBlob) return;
+    const ext = recordedBlob.type.includes("mp4") ? "mp4" : "webm";
+    await sendFile(recordedBlob, `voice-note-${Date.now()}.${ext}`, recordedBlob.type);
+    discardRecording();
+  }, [recordedBlob, sendFile, discardRecording]);
+
+  // ─── Send text + files ─────────────────────────────────────────────────────
   const handleSend = useCallback(async () => {
     const filesToSend = [...pendingFiles];
     setPendingFiles([]);
@@ -276,6 +438,7 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
             senderId: socketId,
             isSelf: true,
             timestamp: Date.now(),
+            reactions: [],
           };
           setMessages((prev) => [...prev, msg]);
           setText("");
@@ -311,6 +474,8 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
     }
   };
 
+  const remainingSeconds = MAX_RECORDING_SECONDS - recordingSeconds;
+
   return (
     <div
       className="flex flex-col h-full"
@@ -332,11 +497,11 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             Send to All
           </button>
-          
-          {connectedDevices.filter(d => d.socketId !== socketId).map((device) => {
+
+          {connectedDevices.filter((d) => d.socketId !== socketId).map((device) => {
             const isSelected = targetId === device.socketId;
             const Icon = device.deviceType === "mobile" ? Smartphone : device.deviceType === "tablet" ? Tablet : Monitor;
-            
+
             return (
               <button
                 key={device.socketId}
@@ -373,9 +538,9 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
           )}
           {messages.map((msg) => {
             if ("text" in msg) {
-              return <TextMessageBubble key={msg.id} message={msg} />;
+              return <TextMessageBubble key={msg.id} message={msg} onReact={handleReact} />;
             }
-            return <FileMessageCard key={msg.transferId} file={msg as FileProgress} />;
+            return <FileMessageCard key={msg.transferId} file={msg as FileProgress} onReact={handleReact} />;
           })}
         </AnimatePresence>
         <div ref={bottomRef} />
@@ -383,7 +548,7 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
 
       {/* Error */}
       <AnimatePresence>
-        {fileError && (
+        {(fileError || micError) && (
           <motion.div
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
@@ -391,10 +556,57 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
             className="mx-4 mb-2 flex items-center gap-2 text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2"
           >
             <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-            {fileError}
-            <button onClick={() => setFileError(null)} className="ml-auto">
+            {fileError || micError}
+            <button onClick={() => { setFileError(null); setMicError(null); }} className="ml-auto">
               <X className="w-3 h-3 hover:text-red-300" />
             </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Voice Note Preview */}
+      <AnimatePresence>
+        {recordedBlob && recordedBlobUrl && !isRecording && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            className="mx-4 mb-2 p-3 rounded-xl bg-white/[0.04] border border-emerald-500/30 flex items-center gap-3"
+          >
+            <div className="w-8 h-8 rounded-full bg-emerald-500/15 flex items-center justify-center text-emerald-400 flex-shrink-0">
+              <Mic className="w-4 h-4" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-emerald-400 font-semibold mb-1">Voice note · {formatTime(recordingSeconds)}</p>
+              <audio
+                ref={previewAudioRef}
+                src={recordedBlobUrl}
+                onEnded={() => setIsPreviewPlaying(false)}
+                className="hidden"
+              />
+              <button
+                onClick={togglePreviewPlay}
+                className="flex items-center gap-1.5 text-xs text-neutral-300 hover:text-white transition-colors"
+              >
+                {isPreviewPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                {isPreviewPlaying ? "Pause preview" : "Preview"}
+              </button>
+            </div>
+            <button
+              onClick={discardRecording}
+              className="text-neutral-500 hover:text-red-400 transition-colors p-1"
+              title="Discard"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+            <Button
+              size="sm"
+              onClick={sendVoiceNote}
+              disabled={isSendingFile}
+              className="flex-shrink-0 text-xs px-3 h-8"
+            >
+              Send
+            </Button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -414,13 +626,35 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
                   <Paperclip className="w-3.5 h-3.5 text-purple-400" />
                   <span className="text-xs text-neutral-300 max-w-32 truncate">{f.name}</span>
                   <button
-                    onClick={() => setPendingFiles(prev => prev.filter((_, index) => index !== i))}
+                    onClick={() => setPendingFiles((prev) => prev.filter((_, index) => index !== i))}
                     className="text-neutral-500 hover:text-red-400 ml-1"
                   >
                     <X className="w-3 h-3" />
                   </button>
                 </div>
               ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Recording indicator */}
+        <AnimatePresence>
+          {isRecording && (
+            <motion.div
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 4 }}
+              className="flex items-center gap-2 mb-2 px-3 py-2 rounded-xl bg-red-500/10 border border-red-500/20"
+            >
+              <motion.div
+                animate={{ opacity: [1, 0.2, 1] }}
+                transition={{ repeat: Infinity, duration: 1.2 }}
+                className="w-2.5 h-2.5 rounded-full bg-red-500"
+              />
+              <span className="text-xs text-red-400 font-medium">Recording {formatTime(recordingSeconds)}</span>
+              {remainingSeconds <= 30 && (
+                <span className="ml-auto text-xs text-orange-400 font-medium">{formatTime(remainingSeconds)} left</span>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -437,7 +671,7 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
           />
           <button
             onClick={() => fileInputRef.current?.click()}
-            disabled={isSendingFile}
+            disabled={isSendingFile || isRecording}
             className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-neutral-500 hover:text-purple-400 hover:bg-purple-500/10 transition-all disabled:opacity-40"
             title="Attach file"
           >
@@ -449,17 +683,32 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Type a message or paste a link… (Enter to send)"
+            placeholder={isRecording ? "Recording…" : "Type a message or paste a link… (Enter to send)"}
             rows={1}
-            className="flex-1 resize-none bg-transparent text-sm text-neutral-100 placeholder:text-neutral-600 focus:outline-none py-1.5 max-h-32 overflow-y-auto"
+            disabled={isRecording}
+            className="flex-1 resize-none bg-transparent text-sm text-neutral-100 placeholder:text-neutral-600 focus:outline-none py-1.5 max-h-32 overflow-y-auto disabled:opacity-50"
             style={{ lineHeight: "1.5" }}
           />
+
+          {/* Mic button */}
+          <button
+            onClick={isRecording ? stopRecording : startRecording}
+            disabled={!!recordedBlob}
+            className={`flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-all disabled:opacity-40 ${
+              isRecording
+                ? "bg-red-500/20 border border-red-500/40 text-red-400 hover:bg-red-500/30"
+                : "text-neutral-500 hover:text-emerald-400 hover:bg-emerald-500/10"
+            }`}
+            title={isRecording ? "Stop recording" : "Record voice note"}
+          >
+            {isRecording ? <StopCircle className="w-4 h-4" /> : recordedBlob ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+          </button>
 
           {/* Send */}
           <Button
             size="sm"
             onClick={handleSend}
-            disabled={!text.trim() && pendingFiles.length === 0}
+            disabled={(!text.trim() && pendingFiles.length === 0) || isRecording}
             className="flex-shrink-0 h-9 w-9 p-0 rounded-xl"
             aria-label="Send message"
           >
@@ -467,7 +716,7 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
           </Button>
         </div>
         <p className="text-[10px] text-neutral-700 mt-1.5 text-center">
-          Drop files anywhere · Max 50 MB · End-to-end in same session
+          Drop files anywhere · Max 50 MB · Voice notes up to 2 min
         </p>
       </div>
     </div>

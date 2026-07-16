@@ -32,6 +32,7 @@ export interface TextMessage {
   senderId: string;
   isSelf: boolean;
   timestamp: number;
+  reactions?: { emoji: string; deviceName: string }[];
 }
 
 // ─── File ──────────────────────────────────────────────────────────────────
@@ -57,6 +58,7 @@ export interface FileProgress {
   isSelf: boolean;
   senderId: string;
   timestamp: number;
+  reactions?: { emoji: string; deviceName: string }[];
 }
 
 export type TransferMessage = TextMessage | FileProgress;
@@ -88,6 +90,7 @@ export interface ServerToClientEvents {
     fileSize: number;
   }) => void;
   "transfer:file_complete_ack": (data: { transferId: string }) => void;
+  "transfer:reaction_received": (data: { messageId: string; emoji: string; deviceName: string }) => void;
 }
 
 export interface ClientToServerEvents {
@@ -124,5 +127,9 @@ export interface ClientToServerEvents {
       targetId?: string;
     },
     callback: (res: { success: boolean; chunkIndex?: number; error?: string }) => void
+  ) => void;
+  "transfer:react": (
+    data: { roomId: string; targetId?: string; messageId: string; emoji: string; deviceName: string },
+    callback: (res: { success: boolean; error?: string }) => void
   ) => void;
 }

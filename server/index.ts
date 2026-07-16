@@ -18,7 +18,7 @@ const ALLOWED_EXTENSIONS = new Set([
   "jpg","jpeg","png","gif","webp","svg",
   "pdf","txt","md","csv","json","xml",
   "zip","tar","gz","7z",
-  "mp4","webm","mp3","ogg","wav",
+  "mp4","webm","mp3","ogg","wav","m4a",
   "doc","docx","xls","xlsx","ppt","pptx",
   "ts","js","html","css","py","rb","go","rs","java",
 ]);
@@ -384,6 +384,33 @@ io.on("connection", (socket: Socket) => {
         socket.emit("transfer:file_complete_ack", { transferId });
         room.pendingFiles.delete(transferId);
       }
+    }
+  );
+
+  // ── Transfer: Reactions ──────────────────────────────────────────────────
+
+  socket.on(
+    "transfer:react",
+    (
+      { roomId, targetId, messageId, emoji, deviceName }: { roomId: string; targetId?: string; messageId: string; emoji: string; deviceName: string },
+      callback: (res: { success: boolean; error?: string }) => void
+    ) => {
+      const room = rooms.get(roomId);
+      if (!room || !room.devices.has(socket.id)) {
+        return callback({ success: false, error: "not_in_room" });
+      }
+
+      resetRoomExpiry(room);
+
+      const payload = { messageId, emoji, deviceName };
+
+      if (targetId && targetId !== "all") {
+        socket.to(targetId).emit("transfer:reaction_received", payload);
+      } else {
+        socket.to(roomId).emit("transfer:reaction_received", payload);
+      }
+
+      callback({ success: true });
     }
   );
 

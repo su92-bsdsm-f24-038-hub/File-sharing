@@ -1,17 +1,26 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Check, Copy, Clock } from "lucide-react";
+import { Check, Copy, Clock, Smile } from "lucide-react";
 import { TextMessage as TMsg } from "@/types";
 import { useState } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { ReactionPicker } from "@/components/ReactionPicker";
+import { AnimatePresence } from "framer-motion";
 
 interface TextMessageProps {
   message: TMsg;
+  onReact: (messageId: string, emoji: string) => void;
 }
 
-export function TextMessageBubble({ message }: TextMessageProps) {
+export function TextMessageBubble({ message, onReact }: TextMessageProps) {
   const [copied, setCopied] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
+
+  const groupedReactions = message.reactions?.reduce((acc, r) => {
+    acc[r.emoji] = (acc[r.emoji] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
 
   const handleCopy = async () => {
     try {
@@ -47,6 +56,23 @@ export function TextMessageBubble({ message }: TextMessageProps) {
             {message.text}
           </p>
         </GlassCard>
+        
+        {groupedReactions && Object.keys(groupedReactions).length > 0 && (
+          <div className={`flex flex-wrap gap-1 mt-[-10px] relative z-10 ${message.isSelf ? "justify-end mr-2" : "justify-start ml-2"}`}>
+            {Object.entries(groupedReactions).map(([emoji, count]) => (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                key={emoji}
+                className="px-1.5 py-0.5 rounded-full bg-black/80 border border-purple-500/30 text-xs flex items-center gap-1 shadow-[0_2px_8px_rgba(124,58,237,0.2)] backdrop-blur-md"
+              >
+                <span>{emoji}</span>
+                {count > 1 && <span className="text-[10px] text-neutral-300 font-medium">{count}</span>}
+              </motion.div>
+            ))}
+          </div>
+        )}
+
         <div
           className={`flex items-center gap-2 mt-1 px-1 opacity-0 group-hover:opacity-100 transition-opacity ${
             message.isSelf ? "justify-end" : "justify-start"
@@ -67,6 +93,25 @@ export function TextMessageBubble({ message }: TextMessageProps) {
               <Copy className="w-3 h-3" />
             )}
           </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowPicker(!showPicker)}
+              className="text-[10px] text-neutral-500 hover:text-purple-400 transition-colors flex items-center justify-center w-5 h-5 rounded hover:bg-white/5"
+              title="React"
+            >
+              <Smile className="w-3.5 h-3.5" />
+            </button>
+            <AnimatePresence>
+              {showPicker && (
+                <ReactionPicker
+                  onSelect={(emoji) => {
+                    onReact(message.id, emoji);
+                    setShowPicker(false);
+                  }}
+                />
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </motion.div>
