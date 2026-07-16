@@ -7,7 +7,7 @@ import crypto from "crypto";
 const app = express();
 const httpServer = createServer(app);
 
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+const FRONTEND_URLS = process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : ["http://localhost:3000", "https://quickdrop.agent0s.dev", "http://quickdrop.agent0s.dev"];
 const PORT = parseInt(process.env.SOCKET_PORT || "4000", 10);
 const ROOM_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
@@ -114,7 +114,7 @@ function deleteRoom(roomId: string): void {
 
 // ─── CORS & Health ────────────────────────────────────────────────────────────
 
-app.use(cors({ origin: FRONTEND_URL, credentials: true }));
+app.use(cors({ origin: FRONTEND_URLS, credentials: true }));
 app.use(express.json());
 
 app.get("/health", (_req, res) => {
@@ -134,7 +134,7 @@ app.get("/api/room-by-pin/:pin", (req, res) => {
 // ─── Socket.IO ────────────────────────────────────────────────────────────────
 
 const io = new Server(httpServer, {
-  cors: { origin: FRONTEND_URL, credentials: true },
+  cors: { origin: FRONTEND_URLS, credentials: true },
   maxHttpBufferSize: CHUNK_SIZE + 4096, // chunk + metadata headroom
 });
 
