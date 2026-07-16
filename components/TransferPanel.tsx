@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Paperclip, X, AlertCircle } from "lucide-react";
+import { Send, Paperclip, X, AlertCircle, Monitor, Smartphone, Tablet } from "lucide-react";
 import { Socket } from "socket.io-client";
-import { ServerToClientEvents, ClientToServerEvents, TransferMessage, FileProgress, TextMessage } from "@/types";
+import { ServerToClientEvents, ClientToServerEvents, TransferMessage, FileProgress, TextMessage, RoomDevice } from "@/types";
 import { TextMessageBubble } from "@/components/TextMessage";
 import { FileMessageCard } from "@/components/FileMessage";
 import { Button } from "@/components/ui/Button";
@@ -23,6 +23,9 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
   const [messages, setMessages] = useState<TransferMessage[]>([]);
   const [text, setText] = useState("");
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [connectedDevices, setConnectedDevices] = useState<RoomDevice[]>([]);
+  const [targetId, setTargetId] = useState<string>("all");
+  const blobUrls = useRef<Set<string>>(new Set());
   const [fileError, setFileError] = useState<string | null>(null);
   const [isSendingFile, setIsSendingFile] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -33,6 +36,28 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // ─── Listen for room state ────────────────────────────────────────────────
+  useEffect(() => {
+    const handleState = (data: { devices: RoomDevice[] }) => {
+      setConnectedDevices(data.devices);
+      setTargetId((prev) => {
+        if (prev !== "all" && !data.devices.find((d) => d.socketId === prev)) {
+          return "all";
+        }
+        return prev;
+      });
+    };
+    socket.on("room:state", handleState);
+    return () => { socket.off("room:state", handleState); };
+  }, [socket]);
+
+  // ─── Cleanup Blob URLs ────────────────────────────────────────────────────
+  useEffect(() => {
+    return () => {
+      blobUrls.current.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, []);
 
   // ─── Listen for incoming text ──────────────────────────────────────────────
   useEffect(() => {
@@ -118,6 +143,7 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
         const allChunks = buf.filter(Boolean) as Uint8Array[];
         const blob = new Blob(allChunks as BlobPart[], { type: data.fileType });
         blobUrl = URL.createObjectURL(blob);
+        blobUrls.current.add(blobUrl);
         chunkBuffers.current.delete(data.transferId);
       }
 
@@ -174,6 +200,7 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
         fileType: file.type || "application/octet-stream",
         fileSize: file.size,
         totalChunks,
+        targetId: targetId === "all" ? undefined : targetId,
       }, resolve);
     });
 
@@ -202,6 +229,7 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
           transferId,
           chunkIndex: i,
           data: chunk,
+          targetId: targetId === "all" ? undefined : targetId,
         }, (ackRes) => {
           if (ackRes.success) {
             // Update progress on outgoing card
@@ -231,7 +259,7 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
       })
     );
     setIsSendingFile(false);
-  }, [socket, roomId, socketId]);
+  }, [socket, roomId, socketId, targetId]);
 
   const handleSend = useCallback(async () => {
     const filesToSend = [...pendingFiles];
@@ -239,7 +267,7 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
 
     const trimmed = text.trim();
     if (trimmed) {
-      socket.emit("transfer:text", { roomId, text: trimmed }, (res) => {
+      socket.emit("transfer:text", { roomId, text: trimmed, targetId: targetId === "all" ? undefined : targetId }, (res) => {
         if (res.success) {
           const msg: TextMessage = {
             id: generateTransferId(),
@@ -258,7 +286,7 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
     for (const f of filesToSend) {
       await sendFile(f);
     }
-  }, [socket, roomId, socketId, text, pendingFiles, sendFile]);
+  }, [socket, roomId, socketId, text, pendingFiles, sendFile, targetId]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -289,6 +317,45 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
       onDragOver={(e) => e.preventDefault()}
       onDrop={handleDrop}
     >
+      {/* Connected Devices Panel */}
+      <div className="px-4 py-3 border-b border-white/5 bg-white/[0.02]">
+        <h3 className="text-xs font-medium text-neutral-400 mb-2 uppercase tracking-wider">Connected Devices</h3>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setTargetId("all")}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm transition-colors ${
+              targetId === "all"
+                ? "bg-purple-500/20 border-purple-500/50 text-purple-100"
+                : "bg-white/[0.03] border-white/10 text-neutral-400 hover:bg-white/[0.06]"
+            }`}
+          >
+            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            Send to All
+          </button>
+          
+          {connectedDevices.filter(d => d.socketId !== socketId).map((device) => {
+            const isSelected = targetId === device.socketId;
+            const Icon = device.deviceType === "mobile" ? Smartphone : device.deviceType === "tablet" ? Tablet : Monitor;
+            
+            return (
+              <button
+                key={device.socketId}
+                onClick={() => setTargetId(device.socketId)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm transition-colors ${
+                  isSelected
+                    ? "bg-purple-500/20 border-purple-500/50 text-purple-100"
+                    : "bg-white/[0.03] border-white/10 text-neutral-400 hover:bg-white/[0.06]"
+                }`}
+              >
+                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <Icon className="w-3.5 h-3.5" />
+                <span className="max-w-24 truncate">{device.deviceName}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 scrollbar-thin scrollbar-thumb-white/10">
         <AnimatePresence initial={false}>

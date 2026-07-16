@@ -14,7 +14,14 @@ export type RoomStatus =
   | "expired"
   | "error";
 
-export type TransferRole = "host" | "guest";
+export type DeviceType = "desktop" | "mobile" | "tablet";
+
+export interface RoomDevice {
+  socketId: string;
+  deviceName: string;
+  deviceType: DeviceType;
+  joinedAt: number;
+}
 
 // ─── Text ──────────────────────────────────────────────────────────────────
 
@@ -58,7 +65,8 @@ export type TransferMessage = TextMessage | FileProgress;
 
 export interface ServerToClientEvents {
   "room:peer_joined": (data: { socketId: string }) => void;
-  "room:peer_left": (data: { socketId: string; role: TransferRole }) => void;
+  "room:peer_left": (data: { socketId: string }) => void;
+  "room:state": (data: { devices: RoomDevice[] }) => void;
   "room:expired": (data: { reason: string }) => void;
   "transfer:text_received": (data: {
     text: string;
@@ -84,15 +92,15 @@ export interface ServerToClientEvents {
 
 export interface ClientToServerEvents {
   "room:create": (
-    data: { userId: string },
+    data: { userId: string; deviceName: string; deviceType: DeviceType },
     callback: (res: { success: boolean; roomId?: string; pin?: string; error?: string }) => void
   ) => void;
   "room:join": (
-    data: { roomId: string; pin: string },
+    data: { roomId: string; pin: string; deviceName: string; deviceType: DeviceType },
     callback: (res: { success: boolean; error?: string }) => void
   ) => void;
   "transfer:text": (
-    data: { roomId: string; text: string },
+    data: { roomId: string; text: string; targetId?: string },
     callback: (res: { success: boolean; error?: string }) => void
   ) => void;
   "transfer:file_init": (
@@ -103,6 +111,7 @@ export interface ClientToServerEvents {
       fileType: string;
       fileSize: number;
       totalChunks: number;
+      targetId?: string;
     },
     callback: (res: { success: boolean; error?: string }) => void
   ) => void;
@@ -112,6 +121,7 @@ export interface ClientToServerEvents {
       transferId: string;
       chunkIndex: number;
       data: ArrayBuffer;
+      targetId?: string;
     },
     callback: (res: { success: boolean; chunkIndex?: number; error?: string }) => void
   ) => void;

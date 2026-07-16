@@ -10,6 +10,7 @@ import {
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { getSocket } from "@/lib/socket";
+import { parseUserAgent } from "@/lib/utils";
 import { QRCodeDisplay } from "@/components/QRCodeDisplay";
 import { ConnectionStatus } from "@/components/ConnectionStatus";
 import { TransferPanel } from "@/components/TransferPanel";
@@ -95,7 +96,8 @@ export default function DashboardPage() {
     socket.off("room:expired");
     setupSocketListeners(socket);
 
-    socket.emit("room:create", { userId: user.uid }, (res) => {
+    const { deviceName, deviceType } = parseUserAgent(navigator.userAgent);
+    socket.emit("room:create", { userId: user.uid, deviceName, deviceType }, (res) => {
       setIsCreating(false);
       if (res.success && res.roomId && res.pin) {
         setRoomId(res.roomId);

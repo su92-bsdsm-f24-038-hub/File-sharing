@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { getSocket } from "@/lib/socket";
+import { parseUserAgent } from "@/lib/utils";
 import { TransferPanel } from "@/components/TransferPanel";
 import { ConnectionStatus } from "@/components/ConnectionStatus";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -75,7 +76,8 @@ function JoinPageInner() {
       setStatus("expired");
     });
 
-    socket.emit("room:join", { roomId, pin }, (res) => {
+    const { deviceName, deviceType } = parseUserAgent(navigator.userAgent);
+    socket.emit("room:join", { roomId, pin, deviceName, deviceType }, (res) => {
       if (res.success) {
         setState({ phase: "connected", socketId: socket.id || "" });
         setStatus("connected");
@@ -84,7 +86,7 @@ function JoinPageInner() {
           res.error === "room_not_found"
             ? "Room not found. The QR code may have expired."
             : res.error === "room_full"
-            ? "This room is full. Only 2 devices can connect."
+            ? "This room is full. Only 4 devices can connect."
             : res.error === "invalid_pin"
             ? "Incorrect PIN. Check the PIN displayed on the laptop."
             : "Failed to join the room. Please try again.";

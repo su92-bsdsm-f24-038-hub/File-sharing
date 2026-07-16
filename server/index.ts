@@ -36,13 +36,21 @@ interface PendingFile {
   senderId: string;
 }
 
+type DeviceType = "desktop" | "mobile" | "tablet";
+
+interface RoomDevice {
+  socketId: string;
+  deviceName: string;
+  deviceType: DeviceType;
+  joinedAt: number;
+}
+
 interface Room {
   id: string;
   pin: string;
   createdAt: number;
   lastActivity: number;
-  sockets: Set<string>; // max 2
-  roles: Map<string, "host" | "guest">;
+  devices: Map<string, RoomDevice>; // max 4
   pendingFiles: Map<string, PendingFile>;
   expiryTimer: ReturnType<typeof setTimeout>;
 }
@@ -91,11 +99,18 @@ function scheduleRoomExpiry(roomId: string): ReturnType<typeof setTimeout> {
   return setTimeout(() => {
     const room = rooms.get(roomId);
     if (!room) return;
-    room.sockets.forEach((socketId) => {
+    room.devices.forEach((_, socketId) => {
       io.to(socketId).emit("room:expired", { reason: "inactivity" });
     });
     rooms.delete(roomId);
   }, ROOM_EXPIRY_MS);
+}
+
+function broadcastRoomState(roomId: string) {
+  const room = rooms.get(roomId);
+  if (!room) return;
+  const devices = Array.from(room.devices.values());
+  io.to(roomId).emit("room:state", { devices });
 }
 
 function resetRoomExpiry(room: Room): void {
@@ -146,7 +161,7 @@ io.on("connection", (socket: Socket) => {
   socket.on(
     "room:create",
     (
-      { userId }: { userId: string },
+      { userId, deviceName, deviceType }: { userId: string; deviceName: string; deviceType: DeviceType },
       callback: (res: { success: boolean; roomId?: string; pin?: string; error?: string }) => void
     ) => {
       if (!userId) return callback({ success: false, error: "unauthenticated" });
@@ -164,8 +179,7 @@ io.on("connection", (socket: Socket) => {
         pin,
         createdAt: Date.now(),
         lastActivity: Date.now(),
-        sockets: new Set([socket.id]),
-        roles: new Map([[socket.id, "host"]]),
+        devices: new Map([[socket.id, { socketId: socket.id, deviceName: deviceName || "Unknown", deviceType: deviceType || "desktop", joinedAt: Date.now() }]]),
         pendingFiles: new Map(),
         expiryTimer,
       };
@@ -173,10 +187,11 @@ io.on("connection", (socket: Socket) => {
       rooms.set(roomId, room);
       socket.join(roomId);
       socket.data.roomId = roomId;
-      socket.data.role = "host";
 
       console.log(`[room:create] ${roomId} by ${userId}`);
       callback({ success: true, roomId, pin });
+      
+      broadcastRoomState(roomId);
     }
   );
 
@@ -185,24 +200,22 @@ io.on("connection", (socket: Socket) => {
   socket.on(
     "room:join",
     (
-      { roomId, pin }: { roomId: string; pin: string },
+      { roomId, pin, deviceName, deviceType }: { roomId: string; pin: string; deviceName: string; deviceType: DeviceType },
       callback: (res: { success: boolean; error?: string }) => void
     ) => {
       const room = rooms.get(roomId);
       if (!room) return callback({ success: false, error: "room_not_found" });
-      if (room.sockets.size >= 2) return callback({ success: false, error: "room_full" });
+      if (room.devices.size >= 4) return callback({ success: false, error: "room_full" });
       if (room.pin !== pin) return callback({ success: false, error: "invalid_pin" });
 
-      room.sockets.add(socket.id);
-      room.roles.set(socket.id, "guest");
+      room.devices.set(socket.id, { socketId: socket.id, deviceName: deviceName || "Unknown", deviceType: deviceType || "desktop", joinedAt: Date.now() });
       socket.join(roomId);
       socket.data.roomId = roomId;
-      socket.data.role = "guest";
 
       resetRoomExpiry(room);
 
-      // Notify host
       socket.to(roomId).emit("room:peer_joined", { socketId: socket.id });
+      broadcastRoomState(roomId);
 
       console.log(`[room:join] ${socket.id} joined ${roomId}`);
       callback({ success: true });
@@ -214,22 +227,28 @@ io.on("connection", (socket: Socket) => {
   socket.on(
     "transfer:text",
     (
-      { roomId, text }: { roomId: string; text: string },
+      { roomId, text, targetId }: { roomId: string; text: string; targetId?: string },
       callback: (res: { success: boolean; error?: string }) => void
     ) => {
       const room = rooms.get(roomId);
-      if (!room || !room.sockets.has(socket.id)) {
+      if (!room || !room.devices.has(socket.id)) {
         return callback({ success: false, error: "not_in_room" });
       }
 
       const safe = text.slice(0, 10_000); // cap at 10k chars, rendered as plain text
       resetRoomExpiry(room);
 
-      socket.to(roomId).emit("transfer:text_received", {
+      const payload = {
         text: safe,
         senderId: socket.id,
         timestamp: Date.now(),
-      });
+      };
+
+      if (targetId && targetId !== "all") {
+        socket.to(targetId).emit("transfer:text_received", payload);
+      } else {
+        socket.to(roomId).emit("transfer:text_received", payload);
+      }
 
       callback({ success: true });
     }
@@ -247,6 +266,7 @@ io.on("connection", (socket: Socket) => {
         fileType,
         fileSize,
         totalChunks,
+        targetId,
       }: {
         roomId: string;
         transferId: string;
@@ -254,11 +274,12 @@ io.on("connection", (socket: Socket) => {
         fileType: string;
         fileSize: number;
         totalChunks: number;
+        targetId?: string;
       },
       callback: (res: { success: boolean; error?: string }) => void
     ) => {
       const room = rooms.get(roomId);
-      if (!room || !room.sockets.has(socket.id)) {
+      if (!room || !room.devices.has(socket.id)) {
         return callback({ success: false, error: "not_in_room" });
       }
       if (fileSize > MAX_FILE_SIZE) {
@@ -281,15 +302,20 @@ io.on("connection", (socket: Socket) => {
       room.pendingFiles.set(transferId, pending);
       resetRoomExpiry(room);
 
-      // Notify recipient
-      socket.to(roomId).emit("transfer:file_incoming", {
+      const payload = {
         transferId,
         fileName,
         fileType,
         fileSize,
         totalChunks,
         senderId: socket.id,
-      });
+      };
+
+      if (targetId && targetId !== "all") {
+        socket.to(targetId).emit("transfer:file_incoming", payload);
+      } else {
+        socket.to(roomId).emit("transfer:file_incoming", payload);
+      }
 
       callback({ success: true });
     }
@@ -305,16 +331,18 @@ io.on("connection", (socket: Socket) => {
         transferId,
         chunkIndex,
         data,
+        targetId,
       }: {
         roomId: string;
         transferId: string;
         chunkIndex: number;
         data: ArrayBuffer | Buffer;
+        targetId?: string;
       },
       callback: (res: { success: boolean; chunkIndex?: number; error?: string }) => void
     ) => {
       const room = rooms.get(roomId);
-      if (!room || !room.sockets.has(socket.id)) {
+      if (!room || !room.devices.has(socket.id)) {
         return callback({ success: false, error: "not_in_room" });
       }
 
@@ -325,26 +353,34 @@ io.on("connection", (socket: Socket) => {
       pending.receivedChunks++;
       resetRoomExpiry(room);
 
-      // Ack to sender for progress
       callback({ success: true, chunkIndex });
 
-      // Forward chunk to recipient
-      socket.to(roomId).emit("transfer:file_chunk_received", {
+      const payload = {
         transferId,
         chunkIndex,
         data: pending.chunks[chunkIndex],
         receivedChunks: pending.receivedChunks,
         totalChunks: pending.totalChunks,
-      });
+      };
 
-      // All chunks received → signal completion
+      if (targetId && targetId !== "all") {
+        socket.to(targetId).emit("transfer:file_chunk_received", payload);
+      } else {
+        socket.to(roomId).emit("transfer:file_chunk_received", payload);
+      }
+
       if (pending.receivedChunks === pending.totalChunks) {
-        socket.to(roomId).emit("transfer:file_complete", {
+        const completePayload = {
           transferId,
           fileName: pending.fileName,
           fileType: pending.fileType,
           fileSize: pending.fileSize,
-        });
+        };
+        if (targetId && targetId !== "all") {
+          socket.to(targetId).emit("transfer:file_complete", completePayload);
+        } else {
+          socket.to(roomId).emit("transfer:file_complete", completePayload);
+        }
         socket.emit("transfer:file_complete_ack", { transferId });
         room.pendingFiles.delete(transferId);
       }
@@ -361,23 +397,15 @@ io.on("connection", (socket: Socket) => {
     const room = rooms.get(roomId);
     if (!room) return;
 
-    room.sockets.delete(socket.id);
-    room.roles.delete(socket.id);
+    room.devices.delete(socket.id);
 
-    if (room.sockets.size === 0) {
+    if (room.devices.size === 0) {
       deleteRoom(roomId);
     } else {
-      // Notify remaining peer
       io.to(roomId).emit("room:peer_left", {
         socketId: socket.id,
-        role: socket.data.role,
       });
-
-      if (socket.data.role === "host") {
-        // Host left — close the room
-        io.to(roomId).emit("room:expired", { reason: "host_disconnected" });
-        deleteRoom(roomId);
-      }
+      broadcastRoomState(roomId);
     }
   });
 });

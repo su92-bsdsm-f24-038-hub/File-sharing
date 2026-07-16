@@ -106,13 +106,31 @@ export function FileMessageCard({ file }: FileMessageProps) {
 
               {/* Image preview */}
               {isComplete && file.blobUrl && file.fileType.startsWith("image/") && !file.isSelf && (
-                <div className="mt-3 rounded-xl overflow-hidden border border-white/10">
+                <div className="mt-3 rounded-xl overflow-hidden border border-white/10 bg-black/40">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={file.blobUrl}
                     alt={file.fileName}
                     className="max-w-full max-h-48 object-cover"
                   />
+                </div>
+              )}
+
+              {/* Video preview */}
+              {isComplete && file.blobUrl && file.fileType.startsWith("video/") && !file.isSelf && (
+                <div className="mt-3 rounded-xl overflow-hidden border border-white/10 bg-black/40">
+                  <video
+                    src={file.blobUrl}
+                    controls
+                    className="max-w-full max-h-64 object-cover"
+                  />
+                </div>
+              )}
+
+              {/* Video buffering skeleton */}
+              {!isComplete && isIncoming && file.fileType.startsWith("video/") && (
+                <div className="mt-3 rounded-xl overflow-hidden border border-white/10 bg-white/5 animate-pulse h-32 flex items-center justify-center">
+                  <div className="w-6 h-6 rounded-full border-2 border-purple-400 border-t-transparent animate-spin" />
                 </div>
               )}
             </div>
