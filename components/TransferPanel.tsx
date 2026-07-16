@@ -22,6 +22,7 @@ interface TransferPanelProps {
 export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) {
   const [messages, setMessages] = useState<TransferMessage[]>([]);
   const [text, setText] = useState("");
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [fileError, setFileError] = useState<string | null>(null);
   const [isSendingFile, setIsSendingFile] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -134,33 +135,7 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
     return () => { socket.off("transfer:file_complete", handleComplete); };
   }, [socket]);
 
-  // ─── Send text ────────────────────────────────────────────────────────────
-  const sendText = useCallback(() => {
-    const trimmed = text.trim();
-    if (!trimmed) return;
-
-    socket.emit("transfer:text", { roomId, text: trimmed }, (res) => {
-      if (res.success) {
-        const msg: TextMessage = {
-          id: generateTransferId(),
-          type: "text",
-          text: trimmed,
-          senderId: socketId,
-          isSelf: true,
-          timestamp: Date.now(),
-        };
-        setMessages((prev) => [...prev, msg]);
-        setText("");
-      }
-    });
-  }, [socket, roomId, socketId, text]);
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendText();
-    }
-  };
+  // ─── Sending handled via handleSend below ────────────────────────────────
 
   // ─── Send file ────────────────────────────────────────────────────────────
   const sendFile = useCallback(async (file: File) => {
@@ -258,16 +233,54 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
     setIsSendingFile(false);
   }, [socket, roomId, socketId]);
 
+  const handleSend = useCallback(async () => {
+    const filesToSend = [...pendingFiles];
+    setPendingFiles([]);
+
+    const trimmed = text.trim();
+    if (trimmed) {
+      socket.emit("transfer:text", { roomId, text: trimmed }, (res) => {
+        if (res.success) {
+          const msg: TextMessage = {
+            id: generateTransferId(),
+            type: "text",
+            text: trimmed,
+            senderId: socketId,
+            isSelf: true,
+            timestamp: Date.now(),
+          };
+          setMessages((prev) => [...prev, msg]);
+          setText("");
+        }
+      });
+    }
+
+    for (const f of filesToSend) {
+      await sendFile(f);
+    }
+  }, [socket, roomId, socketId, text, pendingFiles, sendFile]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) sendFile(file);
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      setPendingFiles((prev) => [...prev, ...files]);
+    }
     e.target.value = "";
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
-    const file = e.dataTransfer.files?.[0];
-    if (file) sendFile(file);
+    const files = Array.from(e.dataTransfer.files || []);
+    if (files.length > 0) {
+      setPendingFiles((prev) => [...prev, ...files]);
+    }
   };
 
   return (
@@ -321,11 +334,36 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
 
       {/* Input */}
       <div className="px-4 pb-4">
+        <AnimatePresence>
+          {pendingFiles.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              className="flex flex-wrap gap-2 mb-2"
+            >
+              {pendingFiles.map((f, i) => (
+                <div key={i} className="flex items-center gap-1.5 bg-purple-500/10 border border-purple-500/20 px-2.5 py-1.5 rounded-lg">
+                  <Paperclip className="w-3.5 h-3.5 text-purple-400" />
+                  <span className="text-xs text-neutral-300 max-w-32 truncate">{f.name}</span>
+                  <button
+                    onClick={() => setPendingFiles(prev => prev.filter((_, index) => index !== i))}
+                    className="text-neutral-500 hover:text-red-400 ml-1"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div className="flex items-end gap-2 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur p-2">
           {/* File button */}
           <input
             ref={fileInputRef}
             type="file"
+            multiple
             className="hidden"
             onChange={handleFileSelect}
             id="file-upload"
@@ -353,8 +391,8 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
           {/* Send */}
           <Button
             size="sm"
-            onClick={sendText}
-            disabled={!text.trim()}
+            onClick={handleSend}
+            disabled={!text.trim() && pendingFiles.length === 0}
             className="flex-shrink-0 h-9 w-9 p-0 rounded-xl"
             aria-label="Send message"
           >
