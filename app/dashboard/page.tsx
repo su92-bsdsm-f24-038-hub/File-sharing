@@ -179,7 +179,7 @@ export default function DashboardPage() {
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-start to-primary-end flex items-center justify-center glow-primary">
               <Zap className="w-4 h-4 text-white" />
             </div>
-            <span className="font-bold tracking-tight text-white">QuickDrop</span>
+            <span className="font-bold tracking-tight text-white">Sync</span>
           </Link>
           <div className="flex items-center gap-4">
             <div className="hidden sm:flex items-center gap-2 text-sm text-neutral-400">

@@ -51,11 +51,14 @@ export default function LandingPage() {
       <AnimatePresence>
         {/* Navbar */}
         <nav className="relative z-10 flex items-center justify-between px-6 py-5 max-w-7xl mx-auto">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-start to-primary-end flex items-center justify-center glow-primary">
-              <Zap className="w-4 h-4 text-white" />
+          <div className="flex items-center gap-3 relative z-10">
+            <div className="w-10 h-10 bg-gradient-to-br from-[#1E40AF] to-[#3B82F6] rounded-xl flex items-center justify-center shadow-lg">
+              <Zap className="w-6 h-6 text-white" />
             </div>
-            <span className="font-bold text-lg tracking-tight">QuickDrop</span>
+            <span className="text-xl font-bold tracking-tight text-white relative">
+              Sync
+              <span className="absolute -bottom-1 left-0 w-full h-[2px] bg-gradient-to-r from-[#1E40AF] to-[#3B82F6] rounded-full"></span>
+            </span>
           </div>
           <div className="flex items-center gap-3">
             <Link href="/join">
@@ -227,7 +230,7 @@ export default function LandingPage() {
           >
             <GlassCard className="p-16" glow glowColor="primary">
               <h2 className="text-4xl font-extrabold mb-4">
-                Ready to <span className="text-gradient">QuickDrop?</span>
+                Ready to <span className="text-gradient">Sync?</span>
               </h2>
               <p className="text-neutral-400 mb-8 max-w-md mx-auto">
                 Create a free account, generate your first room, and share something in under 30 seconds.
@@ -248,7 +251,7 @@ export default function LandingPage() {
               <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-primary-start to-primary-end flex items-center justify-center">
                 <Zap className="w-3 h-3 text-white" />
               </div>
-              <span className="font-semibold text-sm">QuickDrop</span>
+              <span className="font-semibold text-sm">Sync</span>
             </div>
             <p className="text-xs text-neutral-600">
               Local-only · No data leaves your machine · Built with Next.js + Socket.IO

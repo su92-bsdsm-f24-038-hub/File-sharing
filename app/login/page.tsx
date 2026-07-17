@@ -95,7 +95,7 @@ export default function LoginPage() {
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-start to-primary-end flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.4)]">
               <Zap className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-xl tracking-tight">QuickDrop</span>
+            <span className="font-bold text-xl tracking-tight">Sync</span>
           </Link>
           <h1 className="text-2xl font-bold">Welcome back</h1>
           <p className="text-sm text-neutral-500 mt-1">Sign in to your account</p>

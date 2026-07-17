@@ -10,13 +10,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "QuickDrop — Instant File & Text Sharing",
+  title: "Sync | Instant Local File Transfer",
   description:
-    "Share files and text instantly between your phone and laptop via QR code. No cables, no cloud upload. Real-time, secure, and blazing fast.",
-  keywords: ["file sharing", "QR code", "instant transfer", "local sharing", "quickdrop"],
+    "Send files, links, and text between your devices instantly over local network. No cables, no cloud upload. Real-time, secure, and blazing fast.",
+  keywords: ["file sharing", "QR code", "instant transfer", "local sharing", "sync"],
   openGraph: {
-    title: "QuickDrop — Instant File & Text Sharing",
-    description: "Share files and text instantly between your phone and laptop via QR code.",
+    title: "Sync | Instant Local File Transfer",
+    description: "Send files, links, and text between your devices instantly over local network.",
     type: "website",
   },
 };

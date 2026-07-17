@@ -63,7 +63,7 @@ export function FlowAnimationCard({ className }: FlowAnimationCardProps) {
             <animate attributeName="stroke-dashoffset" values="360;0" dur="2.6s" repeatCount="indefinite" />
           </path>
           
-          {/* Central Hub Node (QuickDrop Server) */}
+          {/* Central Hub Node (Sync Server) */}
           {/* Outer breathing ring (Blue/Cyan) */}
           <circle cx="400" cy="200" r="24" fill="#3B82F6" filter="url(#glow-blur)">
             <animate attributeName="r" values="20;32;20" dur="3s" repeatCount="indefinite" />

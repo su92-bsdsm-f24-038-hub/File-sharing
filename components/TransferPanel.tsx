@@ -11,6 +11,8 @@ import {
   ServerToClientEvents, ClientToServerEvents,
   TransferMessage, FileProgress, TextMessage, RoomDevice,
 } from "@/types";
+import { Waveform } from "@/components/ui/Waveform";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { TextMessageBubble } from "@/components/TextMessage";
 import { FileMessageCard } from "@/components/FileMessage";
 import { Button } from "@/components/ui/Button";
@@ -39,6 +41,7 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const chunkBuffers = useRef<Map<string, Uint8Array[]>>(new Map());
+  const cancelledTransfers = useRef<Set<string>>(new Set());
 
   // ── Voice Note State ────────────────────────────────────────────────────────
   const [isRecording, setIsRecording] = useState(false);
@@ -338,6 +341,7 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
     const name = overrideName ?? (file instanceof File ? file.name : `voice-note-${Date.now()}.webm`);
     const type = overrideType ?? file.type ?? "audio/webm";
     const size = file.size;
+    cancelledTransfers.current.delete(transferId);
 
     if (size > MAX_FILE_SIZE) {
       setFileError("File exceeds 50 MB limit.");
@@ -391,6 +395,12 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
     const arrayBuffer = await file.arrayBuffer();
 
     for (let i = 0; i < totalChunks; i++) {
+      if (cancelledTransfers.current.has(transferId)) {
+        setMessages((prev) => prev.filter((m) => !("transferId" in m) || m.transferId !== transferId));
+        setIsSendingFile(false);
+        return;
+      }
+      
       const start = i * CHUNK_SIZE;
       const end = Math.min(start + CHUNK_SIZE, size);
       const chunk = arrayBuffer.slice(start, end);
@@ -438,6 +448,11 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
     await sendFile(recordedBlob, `voice-note-${Date.now()}.${ext}`, recordedBlob.type);
     discardRecording();
   }, [recordedBlob, sendFile, discardRecording]);
+
+  const handleCancelTransfer = useCallback((transferId: string) => {
+    cancelledTransfers.current.add(transferId);
+    setMessages((prev) => prev.filter((m) => !("transferId" in m) || m.transferId !== transferId));
+  }, []);
 
   // ─── Send text + files ─────────────────────────────────────────────────────
   const handleSend = useCallback(async () => {
@@ -578,7 +593,7 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
               >
                 {"text" in msg 
                   ? <TextMessageBubble message={msg} onReact={handleReact} />
-                  : <FileMessageCard file={msg as FileProgress} onReact={handleReact} />
+                  : <FileMessageCard file={msg as FileProgress} onReact={handleReact} onCancel={handleCancelTransfer} />
                 }
               </motion.div>
             );
@@ -605,51 +620,82 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
         )}
       </AnimatePresence>
 
-      {/* Voice Note Preview */}
-      <AnimatePresence>
-        {recordedBlob && recordedBlobUrl && !isRecording && (
+      {/* Voice Note Preview / Recording Card */}
+      <AnimatePresence mode="wait">
+        {isRecording ? (
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
-            className="mx-4 mb-2 p-3 rounded-xl bg-white/[0.04] border border-cyan-accent/30 flex items-center gap-3"
+            key="recording"
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            className="mx-4 mb-3"
           >
-            <div className="w-8 h-8 rounded-full bg-cyan-accent/15 flex items-center justify-center text-cyan-accent flex-shrink-0">
-              <Mic className="w-4 h-4" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs text-cyan-accent font-semibold mb-1">Voice note · {formatTime(recordingSeconds)}</p>
-              <audio
-                ref={previewAudioRef}
-                src={recordedBlobUrl}
-                onEnded={() => setIsPreviewPlaying(false)}
-                className="hidden"
-              />
+            <GlassCard glow glowColor="cyan" className="p-4 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center relative">
+                <motion.div
+                  animate={{ scale: [1, 1.5, 1], opacity: [0.8, 0, 0.8] }}
+                  transition={{ repeat: Infinity, duration: 1.5 }}
+                  className="absolute inset-0 bg-[#22D3EE] rounded-full"
+                />
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#1E40AF] to-[#3B82F6] flex items-center justify-center relative z-10 text-white shadow-lg">
+                  <Mic className="w-5 h-5" />
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-medium text-cyan-accent">Recording Audio...</span>
+                  <span className="text-xs font-bold text-white tabular-nums">{formatTime(recordingSeconds)}</span>
+                </div>
+                <Waveform isPlaying={true} color="#22D3EE" className="w-full opacity-80" />
+              </div>
+            </GlassCard>
+          </motion.div>
+        ) : recordedBlob && recordedBlobUrl ? (
+          <motion.div
+            key="preview"
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            className="mx-4 mb-3"
+          >
+            <GlassCard glow glowColor="primary" className="p-4 flex items-center gap-4">
               <button
                 onClick={togglePreviewPlay}
-                className="flex items-center gap-1.5 text-xs text-neutral-300 hover:text-white transition-colors"
+                className="w-12 h-12 rounded-full bg-gradient-to-br from-[#1E40AF] to-[#3B82F6] hover:shadow-[0_0_20px_rgba(34,211,238,0.4)] flex items-center justify-center text-white transition-all shadow-lg flex-shrink-0"
               >
-                {isPreviewPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-                {isPreviewPlaying ? "Pause preview" : "Preview"}
+                {isPreviewPlaying ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current ml-1" />}
               </button>
-            </div>
-            <button
-              onClick={discardRecording}
-              className="text-neutral-500 hover:text-red-400 transition-colors p-1"
-              title="Discard"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-            <Button
-              size="sm"
-              onClick={sendVoiceNote}
-              disabled={isSendingFile}
-              className="flex-shrink-0 text-xs px-3 h-8"
-            >
-              Send
-            </Button>
+              
+              <div className="flex-1 min-w-0 flex items-center">
+                <audio
+                  ref={previewAudioRef}
+                  src={recordedBlobUrl}
+                  onEnded={() => setIsPreviewPlaying(false)}
+                  className="hidden"
+                />
+                <Waveform isPlaying={isPreviewPlaying} color="#3B82F6" className="w-full" />
+              </div>
+              
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  onClick={discardRecording}
+                  className="w-10 h-10 rounded-xl flex items-center justify-center text-neutral-400 hover:text-red-400 hover:bg-white/5 transition-colors"
+                  title="Discard"
+                >
+                  <Trash2 className="w-4.5 h-4.5" />
+                </button>
+                <Button
+                  size="sm"
+                  onClick={sendVoiceNote}
+                  disabled={isSendingFile}
+                  className="h-10 px-4 rounded-xl font-semibold shadow-lg shadow-[#3B82F6]/20"
+                >
+                  Send
+                </Button>
+              </div>
+            </GlassCard>
           </motion.div>
-        )}
+        ) : null}
       </AnimatePresence>
 
       {/* Input */}
@@ -674,28 +720,6 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
                   </button>
                 </div>
               ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Recording indicator */}
-        <AnimatePresence>
-          {isRecording && (
-            <motion.div
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 4 }}
-              className="flex items-center gap-2 mb-2 px-3 py-2 rounded-xl bg-red-500/10 border border-red-500/20"
-            >
-              <motion.div
-                animate={{ opacity: [1, 0.2, 1] }}
-                transition={{ repeat: Infinity, duration: 1.2 }}
-                className="w-2.5 h-2.5 rounded-full bg-red-500"
-              />
-              <span className="text-xs text-red-400 font-medium">Recording {formatTime(recordingSeconds)}</span>
-              {remainingSeconds <= 30 && (
-                <span className="ml-auto text-xs text-orange-400 font-medium">{formatTime(remainingSeconds)} left</span>
-              )}
             </motion.div>
           )}
         </AnimatePresence>

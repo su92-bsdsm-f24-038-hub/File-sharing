@@ -1,18 +1,16 @@
-# QuickDrop
+# Sync
 
-Instant file and text sharing between your phone and laptop via QR code. Real-time WebSockets, in-memory rooms, no database.
+A high-performance local file transfer utility. Sync allows you to quickly pair your phone with your laptop via QR code and send files, links, and text back and forth seamlessly over your local network.
 
-## Tech Stack
+## Features
 
-- **Frontend**: Next.js 14 (App Router) + TypeScript + Tailwind CSS v4 + Framer Motion
-- **Socket Server**: Node.js + Express + Socket.IO (standalone, port 4000)
-- **Auth**: Firebase Authentication (Google OAuth + Email/Password)
-- **Forms**: React Hook Form + Zod
-- **QR**: `qrcode` npm library
+- **Instant Pairing:** Scan a QR code to join a transfer room securely.
+- **Fast Local Transfers:** Files are transferred chunk-by-chunk using Socket.IO, optimizing for local network speeds.
+- **Cross-Platform:** Works in any modern web browser on any device.
+- **Real-Time Progress:** View granular progress bars for incoming and outgoing files.
+- **Voice Notes:** Record and send audio messages directly within the chat.
 
----
-
-## Local Setup
+## Getting Started
 
 ### 1. Prerequisites
 

@@ -441,5 +441,5 @@ io.on("connection", (socket: Socket) => {
 // ─── Start ────────────────────────────────────────────────────────────────────
 
 httpServer.listen(PORT, () => {
-  console.log(`🚀 QuickDrop Socket Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Sync Socket Server running on http://localhost:${PORT}`);
 });

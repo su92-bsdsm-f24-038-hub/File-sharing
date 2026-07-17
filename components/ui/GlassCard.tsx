@@ -17,21 +17,20 @@ export const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
     // Base styles
     let baseStyles = "relative rounded-3xl border bg-white/[0.03] backdrop-blur-xl shadow-[0_4px_24px_rgba(0,0,0,0.4)] ";
     
+    if (glow) {
+      if (glowColor === "primary") baseStyles += " halo-glow";
+      if (glowColor === "cyan") baseStyles += " halo-glow-cyan";
+    }
+
     if (glowColor === "primary") {
       baseStyles += "border-primary-start/10 ";
-      if (glow) {
-        baseStyles += "shadow-[0_0_0_1px_rgba(59,130,246,0.2),0_4px_24px_rgba(59,130,246,0.15),0_0_60px_rgba(59,130,246,0.05)] ";
-      }
       if (hover) {
         baseStyles += "hover:border-primary-start/30 hover:bg-white/[0.06] hover:shadow-[0_0_0_1px_rgba(59,130,246,0.3),0_8px_40px_rgba(59,130,246,0.2)] ";
       }
     } else if (glowColor === "cyan") {
       baseStyles += "border-cyan-accent/10 ";
-      if (glow) {
-        baseStyles += "shadow-[0_0_0_1px_rgba(6,182,212,0.2),0_4px_24px_rgba(6,182,212,0.15),0_0_60px_rgba(6,182,212,0.05)] ";
-      }
       if (hover) {
-        baseStyles += "hover:border-cyan-accent/30 hover:bg-white/[0.06] hover:shadow-[0_0_0_1px_rgba(6,182,212,0.3),0_8px_40px_rgba(6,182,212,0.2)] ";
+        baseStyles += "hover:border-cyan-accent/30 hover:bg-white/[0.06] hover:shadow-[0_0_0_1px_rgba(34,211,238,0.3),0_8px_40px_rgba(34,211,238,0.2)] ";
       }
     } else if (glowColor === "emerald") {
       baseStyles += "border-emerald-accent/10 ";
