@@ -17,40 +17,57 @@
 
   body {
     font-family: var(--font-inter), system-ui, sans-serif;
-    background: #0B1120;
-    color: #fff;
+    background: #09090B;
+    color: #ffffff;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   /* Custom scrollbar */
   ::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
+    width: 6px;
+    height: 6px;
   }
   ::-webkit-scrollbar-track {
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: rgba(59, 130, 246, 0.3); /* primary-start blue */
+    background: rgba(255, 122, 26, 0.2); /* primary-orange glow */
     border-radius: 100px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(59, 130, 246, 0.5);
+    background: rgba(255, 122, 26, 0.4);
+  }
+
+  /* Lenis smooth scrolling reset */
+  html.lenis, html.lenis body {
+    height: auto;
+  }
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+  .lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+  }
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+  .lenis.lenis-scrolling iframe {
+    pointer-events: none;
   }
 }
 
 @layer utilities {
   .halo-glow {
     box-shadow:
-      0 0 40px rgba(59, 130, 246, 0.15),
-      0 0 80px rgba(30, 64, 175, 0.1);
+      0 0 40px rgba(255, 122, 26, 0.15),
+      0 0 80px rgba(255, 122, 26, 0.1);
   }
 
   .halo-glow-cyan {
     box-shadow:
-      0 0 40px rgba(34, 211, 238, 0.15),
-      0 0 80px rgba(34, 211, 238, 0.1);
+      0 0 40px rgba(59, 130, 246, 0.15),
+      0 0 80px rgba(59, 130, 246, 0.1);
   }
 
   .glow-emerald {
@@ -60,14 +77,14 @@
   }
 
   .text-gradient {
-    background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+    background: linear-gradient(135deg, #FF7A1A 0%, #FF9A3D 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .text-gradient-cyan {
-    background: linear-gradient(135deg, #3B82F6 0%, #22D3EE 100%);
+    background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -81,7 +98,7 @@
   }
 
   .gradient-skeleton {
-    background: linear-gradient(90deg, rgba(30,64,175,0.1) 25%, rgba(59,130,246,0.2) 50%, rgba(30,64,175,0.1) 75%);
+    background: linear-gradient(90deg, rgba(255,122,26,0.05) 25%, rgba(255,122,26,0.15) 50%, rgba(255,122,26,0.05) 75%);
     background-size: 200% 100%;
     animation: shimmer 2s infinite linear;
   }

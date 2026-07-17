@@ -1,3 +1,5 @@
+
+
 # Sync
 
 A high-performance local file transfer utility. Sync allows you to quickly pair your phone with your laptop via QR code and send files, links, and text back and forth seamlessly over your local network.

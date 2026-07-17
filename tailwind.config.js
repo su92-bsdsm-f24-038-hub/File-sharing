@@ -9,11 +9,13 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        "indigo-black": "#0B1120",
-        "cyan-accent": "#22D3EE",
-        "primary-start": "#1E40AF",
-        "primary-end": "#3B82F6",
-        "emerald-accent": "#10B981",
+        "indigo-black": "#09090B",
+        "secondary-bg": "#111217",
+        "card-bg": "#15171D",
+        "primary-orange": "#FF7A1A",
+        "glow-orange": "#FF9A3D",
+        "cyan-accent": "#3B82F6", // Downgraded to secondary functional
+        "emerald-accent": "#10B981", // Reserved for success/connected
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],

@@ -21,6 +21,11 @@ export const metadata: Metadata = {
   },
 };
 
+import { SmoothScroll } from "@/components/effects/SmoothScroll";
+import { AuroraBackground } from "@/components/effects/AuroraBackground";
+import { MouseGlow } from "@/components/effects/MouseGlow";
+import { Particles } from "@/components/effects/Particles";
+
 export default function RootLayout({
   children,
 }: {
@@ -28,8 +33,17 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={inter.variable}>
-      <body className="bg-black text-white antialiased min-h-screen">
-        <AuthProvider>{children}</AuthProvider>
+      <body className="bg-indigo-black text-white antialiased min-h-screen selection:bg-primary-orange/30 selection:text-white">
+        <SmoothScroll>
+          <AuthProvider>
+            <AuroraBackground />
+            <Particles />
+            <MouseGlow />
+            <div className="relative z-0">
+              {children}
+            </div>
+          </AuthProvider>
+        </SmoothScroll>
       </body>
     </html>
   );

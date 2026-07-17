@@ -2,99 +2,132 @@
 
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
-  Zap, Shield, QrCode, ArrowRight,
-  Smartphone, Laptop, Lock
+  Zap, Shield, ArrowRight, Lock
 } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
+import { MagneticButton } from "@/components/ui/MagneticButton";
 import { FlowAnimationCard } from "@/components/ui/FlowAnimationCard";
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } },
-};
 
 const stagger = {
   show: { transition: { staggerChildren: 0.1 } },
 };
 
 export default function LandingPage() {
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const heroRef = useRef<HTMLDivElement>(null);
+  const scrollProgressRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Scroll progress bar
+    gsap.to(scrollProgressRef.current, {
+      scaleX: 1,
+      ease: "none",
+      scrollTrigger: {
+        trigger: document.body,
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 0.3,
+      }
+    });
+
+    // Hero fade/scale/blur out on scroll
+    if (heroRef.current) {
+      gsap.to(heroRef.current, {
+        opacity: 0,
+        scale: 0.9,
+        filter: "blur(10px)",
+        scrollTrigger: {
+          trigger: heroRef.current,
+          start: "top top",
+          end: "bottom top",
+          scrub: true,
+        }
+      });
+    }
+
+    return () => {
+      ScrollTrigger.getAll().forEach(t => t.kill());
     };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-indigo-black">
-      {/* Cursor Follow Glow */}
-      <motion.div
-        className="pointer-events-none fixed inset-0 z-0 transition-opacity duration-300"
-        animate={{
-          background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(59, 130, 246, 0.08), transparent 40%)`,
-        }}
+    <div className="relative min-h-screen overflow-hidden">
+      <div 
+        ref={scrollProgressRef} 
+        className="fixed top-0 left-0 h-1 w-full bg-gradient-to-r from-primary-orange to-glow-orange origin-left scale-x-0 z-50 shadow-[0_0_10px_rgba(255,122,26,0.8)]"
       />
-
-      {/* Animated Gradient Mesh (Background) */}
-      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-        <div className="absolute top-[-20%] left-[10%] w-[600px] h-[600px] rounded-full bg-primary-start/10 blur-[120px] animate-blob" />
-        <div className="absolute top-[30%] right-[-10%] w-[500px] h-[500px] rounded-full bg-cyan-accent/10 blur-[120px] animate-blob animation-delay-2000" />
-        <div className="absolute bottom-[-10%] left-[30%] w-[400px] h-[400px] rounded-full bg-primary-end/10 blur-[100px] animate-blob animation-delay-4000" />
-      </div>
 
       <AnimatePresence>
         {/* Navbar */}
-        <nav className="relative z-10 flex items-center justify-between px-6 py-5 max-w-7xl mx-auto">
-          <div className="flex items-center gap-3 relative z-10">
-            <div className="w-10 h-10 bg-gradient-to-br from-[#1E40AF] to-[#3B82F6] rounded-xl flex items-center justify-center shadow-lg">
+        <motion.nav 
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="sticky top-0 z-40 flex items-center justify-between px-6 py-5 max-w-7xl mx-auto backdrop-blur-xl border-b border-white/5 bg-[#09090B]/50 rounded-b-3xl"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-primary-orange to-glow-orange rounded-xl flex items-center justify-center shadow-lg shadow-primary-orange/20">
               <Zap className="w-6 h-6 text-white" />
             </div>
             <span className="text-xl font-bold tracking-tight text-white relative">
               Sync
-              <span className="absolute -bottom-1 left-0 w-full h-[2px] bg-gradient-to-r from-[#1E40AF] to-[#3B82F6] rounded-full"></span>
+              <span className="absolute -bottom-1 left-0 w-full h-[2px] bg-gradient-to-r from-primary-orange to-glow-orange rounded-full"></span>
             </span>
           </div>
           <div className="flex items-center gap-3">
             <Link href="/join">
-              <Button variant="ghost" size="sm" className="text-primary-start">Enter Code</Button>
+              <Button variant="ghost" size="sm" className="text-primary-orange hover:text-glow-orange hover:bg-white/5">Enter Code</Button>
             </Link>
             <Link href="/login">
-              <Button variant="ghost" size="sm">Sign In</Button>
+              <Button variant="ghost" size="sm" className="hover:bg-white/5">Sign In</Button>
             </Link>
             <Link href="/signup">
-              <Button size="sm">Get Started</Button>
+              <MagneticButton intensity={0.1}>
+                <Button size="sm" className="bg-primary-orange hover:bg-glow-orange text-white shadow-[0_0_15px_rgba(255,122,26,0.4)] border-0">Get Started</Button>
+              </MagneticButton>
             </Link>
           </div>
-        </nav>
+        </motion.nav>
 
         {/* Hero */}
-        <section className="relative z-10 pt-20 pb-32 px-6 max-w-5xl mx-auto text-center">
+        <section ref={heroRef} className="relative z-10 pt-20 pb-32 px-6 max-w-5xl mx-auto text-center">
           <motion.div
             variants={stagger}
             initial="hidden"
             whileInView="show"
-            viewport={{ once: true, margin: "-50px" }}
+            viewport={{ once: true }}
             className="relative z-10 flex flex-col items-center gap-8 mt-12"
           >
-            {/* The Signature Animation Component */}
-            <motion.div variants={fadeUp} className="w-full max-w-3xl mx-auto">
+            {/* Flow SVG wrapper with orange glow */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
+              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full max-w-3xl mx-auto relative"
+            >
+              <div className="absolute inset-0 bg-primary-orange/10 blur-[100px] rounded-full" />
               <FlowAnimationCard />
             </motion.div>
 
-            <motion.div variants={fadeUp} className="mt-8">
-              <span className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold bg-emerald-accent/10 border border-emerald-accent/20 text-emerald-accent backdrop-blur-md">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="mt-8"
+            >
+              <span className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold bg-emerald-accent/10 border border-emerald-accent/20 text-emerald-accent backdrop-blur-md shadow-[0_0_20px_rgba(16,185,129,0.15)]">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-accent animate-pulse" />
                 Real-time · No cloud · Secure Peer-to-Peer
               </span>
             </motion.div>
 
-            <h1 className="text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-extrabold tracking-tighter leading-[1.05]">
               <motion.span
                 initial="off"
                 whileInView="on"
@@ -103,7 +136,7 @@ export default function LandingPage() {
                 className="inline-block"
               >
                 {"Drop anything.".split(" ").map((word, i) => (
-                  <motion.span key={`title1-${i}`} variants={{ off: { opacity: 0, x: -20 }, on: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 300, damping: 24 } } }} className="inline-block mr-4">
+                  <motion.span key={`title1-${i}`} variants={{ off: { opacity: 0, y: 40, rotateX: 90 }, on: { opacity: 1, y: 0, rotateX: 0, transition: { type: "spring", stiffness: 200, damping: 20 } } }} className="inline-block mr-4 origin-bottom">
                     {word}
                   </motion.span>
                 ))}
@@ -113,11 +146,11 @@ export default function LandingPage() {
                 initial="off"
                 whileInView="on"
                 viewport={{ once: true }}
-                variants={{ off: {}, on: { transition: { staggerChildren: 0.1, delayChildren: 0.2 } } }}
+                variants={{ off: {}, on: { transition: { staggerChildren: 0.1, delayChildren: 0.3 } } }}
                 className="text-gradient inline-block"
               >
                 {"Instantly.".split(" ").map((word, i) => (
-                  <motion.span key={`title2-${i}`} variants={{ off: { opacity: 0, x: -20 }, on: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 300, damping: 24 } } }} className="inline-block mr-4">
+                  <motion.span key={`title2-${i}`} variants={{ off: { opacity: 0, scale: 0.8, filter: "blur(10px)" }, on: { opacity: 1, scale: 1, filter: "blur(0px)", transition: { type: "spring", stiffness: 200, damping: 20 } } }} className="inline-block mr-4">
                     {word}
                   </motion.span>
                 ))}
@@ -128,92 +161,91 @@ export default function LandingPage() {
               initial="off"
               whileInView="on"
               viewport={{ once: true }}
-              variants={{ off: {}, on: { transition: { staggerChildren: 0.02, delayChildren: 0.4 } } }}
-              className="max-w-xl text-lg text-neutral-400 leading-relaxed backdrop-blur-sm"
+              variants={{ off: {}, on: { transition: { staggerChildren: 0.02, delayChildren: 0.6 } } }}
+              className="max-w-2xl text-lg md:text-xl text-neutral-400 leading-relaxed"
             >
               {"Scan a QR code to pair your phone with your laptop in seconds. Send files, links, and text back and forth — no cables, no cloud upload, no friction.".split(" ").map((word, i) => (
-                <motion.span key={`desc-${i}`} variants={{ off: { opacity: 0, y: 10 }, on: { opacity: 1, y: 0 } }} className="inline-block mr-1.5">
+                <motion.span key={`desc-${i}`} variants={{ off: { opacity: 0, filter: "blur(4px)" }, on: { opacity: 1, filter: "blur(0px)" } }} className="inline-block mr-1.5">
                   {word}
                 </motion.span>
               ))}
             </motion.p>
 
-            <motion.div variants={fadeUp} className="flex items-center gap-4">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1 }}
+              className="flex flex-col sm:flex-row items-center gap-6 mt-4"
+            >
               <Link href="/signup">
-                <Button size="lg" icon={<ArrowRight className="w-5 h-5" />}>
-                  Start Sharing Free
-                </Button>
-              </Link>
-              <Link href="/login">
-                <Button variant="secondary" size="lg">
-                  Sign In
-                </Button>
+                <MagneticButton intensity={0.15}>
+                  <Button size="lg" className="bg-gradient-to-r from-primary-orange to-glow-orange hover:opacity-90 border-0 shadow-[0_0_30px_rgba(255,122,26,0.3)] text-white h-14 px-8 text-lg" icon={<ArrowRight className="w-5 h-5" />}>
+                    Start Sharing Free
+                  </Button>
+                </MagneticButton>
               </Link>
             </motion.div>
           </motion.div>
         </section>
 
         {/* Features Bento Grid */}
-        <section className="relative z-10 py-24 px-6 max-w-6xl mx-auto">
+        <section className="relative z-10 py-32 px-6 max-w-6xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
-            className="text-center mb-16"
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="text-center mb-20"
           >
-            <h2 className="text-4xl font-bold mb-4">Built for Speed & Privacy</h2>
-            <p className="text-neutral-400 max-w-md mx-auto">
+            <h2 className="text-5xl font-extrabold mb-6 tracking-tight">Built for Speed & Privacy</h2>
+            <p className="text-neutral-400 text-lg max-w-xl mx-auto">
               Everything you need to move data securely without relying on third-party cloud servers.
             </p>
           </motion.div>
 
           <motion.div 
-            className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-2 gap-4 auto-rows-[200px]"
+            className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-2 gap-6 auto-rows-[220px]"
             variants={stagger}
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, margin: "-100px" }}
           >
             {/* Bento Card 1 (Large 2x2 highlight) */}
-            <motion.div variants={fadeUp} className="md:col-span-2 md:row-span-2">
-              <GlassCard className="h-full p-8 flex flex-col relative overflow-hidden" hover glowColor="primary">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-primary-start/10 rounded-full blur-[80px]" />
-                <div className="w-12 h-12 rounded-xl bg-white/[0.04] flex items-center justify-center mb-6 z-10">
-                  <Zap className="w-6 h-6 text-primary-start" />
+            <motion.div variants={{ hidden: { opacity: 0, y: 40 }, show: { opacity: 1, y: 0, transition: { type: "spring", bounce: 0 } } }} className="md:col-span-2 md:row-span-2">
+              <GlassCard className="h-full p-10 flex flex-col relative overflow-hidden group" hover glow glowColor="primary">
+                <div className="absolute top-0 right-0 w-80 h-80 bg-primary-orange/20 rounded-full blur-[100px] group-hover:scale-110 transition-transform duration-700" />
+                <div className="w-14 h-14 rounded-2xl bg-[#111217] border border-white/10 flex items-center justify-center mb-6 z-10 group-hover:rotate-12 transition-transform duration-500">
+                  <Zap className="w-7 h-7 text-primary-orange" />
                 </div>
-                <h3 className="text-2xl font-bold mb-3 z-10">Real-time Binary Transfer</h3>
-                <p className="text-neutral-400 leading-relaxed max-w-md z-10">
+                <h3 className="text-3xl font-bold mb-4 z-10 tracking-tight">Real-time Binary Transfer</h3>
+                <p className="text-neutral-400 text-lg leading-relaxed max-w-md z-10">
                   Files travel as raw binary chunks over WebSockets, skipping base64 encoding entirely. 
-                  This makes transfers 33% smaller and significantly faster than traditional methods.
+                  This makes transfers significantly faster than traditional methods.
                 </p>
-                
-                <div className="mt-auto w-full z-10 flex items-center justify-center">
-                  <FlowAnimationCard className="w-full max-w-md scale-90 opacity-80" />
-                </div>
               </GlassCard>
             </motion.div>
 
             {/* Bento Card 2 */}
-            <motion.div variants={fadeUp} className="md:col-span-1 md:row-span-1">
-              <GlassCard className="h-full p-6 flex flex-col" hover glowColor="cyan">
-                <div className="w-10 h-10 rounded-xl bg-white/[0.04] flex items-center justify-center mb-4">
-                  <Shield className="w-5 h-5 text-cyan-accent" />
+            <motion.div variants={{ hidden: { opacity: 0, y: 40 }, show: { opacity: 1, y: 0, transition: { type: "spring", bounce: 0 } } }} className="md:col-span-1 md:row-span-1">
+              <GlassCard className="h-full p-8 flex flex-col group" hover glowColor="cyan">
+                <div className="w-12 h-12 rounded-2xl bg-[#111217] border border-white/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-500">
+                  <Shield className="w-6 h-6 text-cyan-accent" />
                 </div>
-                <h3 className="font-semibold text-lg mb-2">No Cloud Storage</h3>
-                <p className="text-sm text-neutral-400 leading-relaxed">
+                <h3 className="font-semibold text-xl mb-2 tracking-tight">No Cloud Storage</h3>
+                <p className="text-neutral-400 leading-relaxed">
                   Data flows directly peer-to-peer. Nothing is ever saved to a disk.
                 </p>
               </GlassCard>
             </motion.div>
 
             {/* Bento Card 3 */}
-            <motion.div variants={fadeUp} className="md:col-span-1 md:row-span-1">
-              <GlassCard className="h-full p-6 flex flex-col" hover glowColor="emerald">
-                <div className="w-10 h-10 rounded-xl bg-white/[0.04] flex items-center justify-center mb-4">
-                  <Lock className="w-5 h-5 text-emerald-accent" />
+            <motion.div variants={{ hidden: { opacity: 0, y: 40 }, show: { opacity: 1, y: 0, transition: { type: "spring", bounce: 0 } } }} className="md:col-span-1 md:row-span-1">
+              <GlassCard className="h-full p-8 flex flex-col group" hover glowColor="emerald">
+                <div className="w-12 h-12 rounded-2xl bg-[#111217] border border-white/10 flex items-center justify-center mb-4 group-hover:-rotate-12 transition-transform duration-500">
+                  <Lock className="w-6 h-6 text-emerald-accent" />
                 </div>
-                <h3 className="font-semibold text-lg mb-2">Secure Rooms</h3>
-                <p className="text-sm text-neutral-400 leading-relaxed">
+                <h3 className="font-semibold text-xl mb-2 tracking-tight">Secure Rooms</h3>
+                <p className="text-neutral-400 leading-relaxed">
                   Cryptographic UUIDs + 4-digit PINs ensure only you can access your session.
                 </p>
               </GlassCard>
@@ -222,43 +254,46 @@ export default function LandingPage() {
         </section>
 
         {/* CTA */}
-        <section className="relative z-10 py-24 px-6 max-w-3xl mx-auto text-center">
+        <section className="relative z-10 py-32 px-6 max-w-4xl mx-auto text-center">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
+            transition={{ duration: 1, ease: "easeOut" }}
           >
-            <GlassCard className="p-16" glow glowColor="primary">
-              <h2 className="text-4xl font-extrabold mb-4">
+            <GlassCard className="p-20" glow glowColor="primary">
+              <h2 className="text-5xl font-extrabold mb-6 tracking-tight">
                 Ready to <span className="text-gradient">Sync?</span>
               </h2>
-              <p className="text-neutral-400 mb-8 max-w-md mx-auto">
+              <p className="text-neutral-400 text-lg mb-10 max-w-xl mx-auto">
                 Create a free account, generate your first room, and share something in under 30 seconds.
               </p>
               <Link href="/signup">
-                <Button size="lg" icon={<ArrowRight className="w-5 h-5" />}>
-                  Create Free Account
-                </Button>
+                <MagneticButton intensity={0.2}>
+                  <Button size="lg" className="bg-primary-orange hover:bg-glow-orange border-0 shadow-[0_0_40px_rgba(255,122,26,0.4)] text-white h-16 px-10 text-lg rounded-2xl" icon={<ArrowRight className="w-6 h-6" />}>
+                    Create Free Account
+                  </Button>
+                </MagneticButton>
               </Link>
             </GlassCard>
           </motion.div>
         </section>
 
         {/* Footer */}
-        <footer className="relative z-10 border-t border-white/5 py-8 px-6 mt-12">
-          <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-primary-start to-primary-end flex items-center justify-center">
-                <Zap className="w-3 h-3 text-white" />
+        <footer className="relative z-10 border-t border-white/5 py-12 px-6 mt-12 bg-[#09090B]/80 backdrop-blur-md">
+          <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-orange to-glow-orange flex items-center justify-center shadow-[0_0_15px_rgba(255,122,26,0.3)]">
+                <Zap className="w-4 h-4 text-white" />
               </div>
-              <span className="font-semibold text-sm">Sync</span>
+              <span className="font-bold text-lg tracking-tight">Sync</span>
             </div>
-            <p className="text-xs text-neutral-600">
+            <p className="text-sm text-neutral-500">
               Local-only · No data leaves your machine · Built with Next.js + Socket.IO
             </p>
-            <div className="flex items-center gap-4 text-xs text-neutral-500">
-              <Link href="/login" className="hover:text-cyan-accent transition-colors">Login</Link>
-              <Link href="/signup" className="hover:text-primary-end transition-colors">Sign Up</Link>
+            <div className="flex items-center gap-6 text-sm text-neutral-400 font-medium">
+              <Link href="/login" className="hover:text-primary-orange transition-colors">Login</Link>
+              <Link href="/signup" className="hover:text-glow-orange transition-colors">Sign Up</Link>
             </div>
           </div>
         </footer>

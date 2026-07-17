@@ -47,9 +47,9 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-[#09090B] flex items-center justify-center p-4 relative overflow-hidden">
       <div className="pointer-events-none fixed inset-0">
-        <div className="absolute top-[-5%] left-[25%] w-[400px] h-[400px] rounded-full bg-violet-900/20 blur-[100px]" />
+        <div className="absolute top-[-5%] left-[25%] w-[400px] h-[400px] rounded-full bg-primary-orange/10 blur-[100px]" />
       </div>
 
       <motion.div
@@ -60,14 +60,14 @@ export default function ForgotPasswordPage() {
       >
         <div className="flex flex-col items-center mb-8">
           <Link href="/" className="flex items-center gap-2 mb-6">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-[0_0_20px_rgba(124,58,237,0.4)]">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-orange to-glow-orange flex items-center justify-center shadow-[0_0_20px_rgba(255,122,26,0.4)]">
               <Zap className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-xl tracking-tight">Sync</span>
+            <span className="font-bold text-xl tracking-tight text-white">Sync</span>
           </Link>
         </div>
 
-        <GlassCard className="p-8" glow>
+        <GlassCard className="p-8" glow glowColor="primary">
           <AnimatePresence mode="wait">
             {!sent ? (
               <motion.div
@@ -77,7 +77,7 @@ export default function ForgotPasswordPage() {
                 exit={{ opacity: 0 }}
               >
                 <h1 className="text-2xl font-bold mb-2">Reset password</h1>
-                <p className="text-sm text-neutral-500 mb-8">
+                <p className="text-sm text-neutral-400 mb-8">
                   Enter your email and we&apos;ll send you a reset link via Firebase.
                 </p>
 
@@ -103,7 +103,7 @@ export default function ForgotPasswordPage() {
                     </motion.p>
                   )}
 
-                  <Button type="submit" className="w-full mt-2" loading={isSubmitting}>
+                  <Button type="submit" className="w-full mt-2 bg-gradient-to-r from-primary-orange to-glow-orange hover:shadow-[0_0_20px_rgba(255,122,26,0.3)] border-0" loading={isSubmitting}>
                     Send Reset Email
                   </Button>
                 </form>
@@ -111,7 +111,7 @@ export default function ForgotPasswordPage() {
                 <div className="mt-6 flex justify-center">
                   <Link
                     href="/login"
-                    className="flex items-center gap-1.5 text-sm text-neutral-500 hover:text-neutral-300 transition-colors"
+                    className="flex items-center gap-1.5 text-sm text-neutral-400 hover:text-white transition-colors"
                   >
                     <ArrowLeft className="w-3.5 h-3.5" />
                     Back to sign in
@@ -129,12 +129,12 @@ export default function ForgotPasswordPage() {
                   <CheckCircle className="w-8 h-8 text-emerald-400" />
                 </div>
                 <h2 className="text-xl font-bold mb-3">Check your inbox</h2>
-                <p className="text-sm text-neutral-500 mb-2">
-                  We sent a password reset link to:
+                <p className="text-sm text-neutral-400 mb-2">
+                  If an account exists, a password reset link was sent to:
                 </p>
-                <p className="text-sm font-semibold text-purple-400 mb-8">{sentEmail}</p>
-                <p className="text-xs text-neutral-600 mb-8">
-                  The link will expire in 1 hour. Check your spam folder if you don&apos;t see it.
+                <p className="text-sm font-semibold text-primary-orange mb-8">{sentEmail}</p>
+                <p className="text-xs text-neutral-500 mb-8 max-w-sm">
+                  The link will expire in 1 hour. Check your spam folder if you don&apos;t see it. Note: Firebase may not send an email if the account doesn&apos;t exist due to Email Enumeration Protection.
                 </p>
 
                 <div className="flex flex-col items-center gap-3 w-full">
@@ -149,7 +149,7 @@ export default function ForgotPasswordPage() {
                     Resend email
                   </Button>
                   <Link href="/login" className="w-full">
-                    <Button variant="ghost" className="w-full">
+                    <Button variant="ghost" className="w-full text-neutral-400 hover:text-white hover:bg-white/5">
                       Back to sign in
                     </Button>
                   </Link>

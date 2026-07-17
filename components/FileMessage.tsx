@@ -86,14 +86,14 @@ export function FileMessageCard({ file, onReact, onCancel }: FileMessageProps) {
         className={`flex relative ${file.isSelf ? "justify-end" : "justify-start"}`}
       >
         <div className="max-w-[85%] min-w-[280px] group relative z-10">
-          <GlassCard glow glowColor="cyan" className="p-4">
+          <GlassCard glow glowColor={isComplete ? (file.isSelf ? "primary" : "emerald") : "primary"} hover={false} className="p-4" tilt={false}>
             <div className="flex items-center gap-4">
               <button
                 onClick={togglePlay}
                 disabled={!isComplete}
                 className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center transition-all ${
                   isComplete
-                    ? "bg-gradient-to-br from-[#1E40AF] to-[#3B82F6] hover:shadow-[0_0_20px_rgba(34,211,238,0.4)] text-white"
+                    ? "bg-gradient-to-br from-primary-orange to-glow-orange hover:shadow-[0_0_20px_rgba(255,122,26,0.4)] text-white"
                     : "bg-white/10 text-neutral-500 cursor-not-allowed"
                 }`}
               >
@@ -104,18 +104,18 @@ export function FileMessageCard({ file, onReact, onCancel }: FileMessageProps) {
                 {isComplete && file.blobUrl ? (
                   <>
                     <audio ref={audioRef} src={file.blobUrl} className="hidden" />
-                    <Waveform isPlaying={isPlaying} color="#22D3EE" className="w-full" />
+                    <Waveform isPlaying={isPlaying} color={file.isSelf ? "#FF7A1A" : "#10B981"} className="w-full" />
                   </>
                 ) : (
                   <div className="w-full flex flex-col justify-center gap-1.5 h-10">
                     <div className="flex items-center justify-between text-xs font-medium">
-                      <span className="text-cyan-accent flex items-center gap-1">
+                      <span className="text-primary-orange flex items-center gap-1">
                         <Loader2 className="w-3 h-3 animate-spin" />
                         {isSending ? "Sending…" : "Receiving…"}
                       </span>
                       <span className="text-neutral-400">{progress}%</span>
                     </div>
-                    <ProgressBar value={progress} size="sm" color="cyan" />
+                    <ProgressBar value={progress} size="sm" color="primary" />
                   </div>
                 )}
               </div>
@@ -135,10 +135,10 @@ export function FileMessageCard({ file, onReact, onCancel }: FileMessageProps) {
                   key={emoji}
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="px-1.5 py-0.5 rounded-full bg-[#0B1120] border border-[#1E40AF] text-xs flex items-center gap-1 shadow-lg"
+                  className="px-1.5 py-0.5 rounded-full bg-[#111217] border border-primary-orange/30 text-xs flex items-center gap-1 shadow-lg"
                 >
                   <span>{emoji}</span>
-                  {count > 1 && <span className="text-[10px] text-neutral-300 font-medium">{count}</span>}
+                  {count > 1 && <span className="text-[10px] text-neutral-400 font-medium">{count}</span>}
                 </motion.div>
               ))}
             </div>
@@ -146,7 +146,7 @@ export function FileMessageCard({ file, onReact, onCancel }: FileMessageProps) {
 
           <div className={`flex mt-1 px-1 opacity-0 group-hover:opacity-100 transition-opacity ${file.isSelf ? "justify-end" : "justify-start"}`}>
             <div className="relative">
-              <button onClick={() => setShowPicker(!showPicker)} className="text-neutral-500 hover:text-[#3B82F6] p-1 rounded">
+              <button onClick={() => setShowPicker(!showPicker)} className="text-neutral-500 hover:text-primary-orange p-1 rounded">
                 <Smile className="w-4 h-4" />
               </button>
               <AnimatePresence>
@@ -170,14 +170,14 @@ export function FileMessageCard({ file, onReact, onCancel }: FileMessageProps) {
       className={`flex relative ${file.isSelf ? "justify-end" : "justify-start"}`}
     >
       <div className="max-w-[90%] min-w-[320px] group relative z-10">
-        <GlassCard glow glowColor="primary" className="p-5 overflow-hidden">
+        <GlassCard glow hover glowColor={isComplete ? (file.isSelf ? "primary" : "emerald") : "primary"} tilt={false} className="p-5 overflow-hidden">
           {/* File Header */}
           <div className="flex items-start gap-4 relative z-10">
             <div className="relative">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#1E40AF] to-[#3B82F6] flex items-center justify-center text-white shadow-lg">
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-lg ${isComplete && !file.isSelf ? "bg-gradient-to-br from-emerald-500 to-emerald-700" : "bg-gradient-to-br from-primary-orange to-glow-orange"}`}>
                 {icon}
               </div>
-              <div className="absolute -bottom-2 -right-2 bg-[#0B1120] px-2 py-0.5 rounded-lg border border-white/10 text-[10px] font-bold text-white shadow-sm">
+              <div className="absolute -bottom-2 -right-2 bg-[#111217] px-2 py-0.5 rounded-lg border border-white/10 text-[10px] font-bold text-white shadow-sm">
                 {ext.length > 4 ? ext.substring(0,4) : ext}
               </div>
             </div>
@@ -208,29 +208,29 @@ export function FileMessageCard({ file, onReact, onCancel }: FileMessageProps) {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="bg-white/5 rounded-xl p-3 border border-white/10"
+                  className="bg-[#111217]/50 rounded-xl p-3 border border-white/5"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <Loader2 className="w-3.5 h-3.5 text-cyan-accent animate-spin" />
-                      <span className="text-xs font-medium text-cyan-accent">
+                      <Loader2 className="w-3.5 h-3.5 text-primary-orange animate-spin" />
+                      <span className="text-xs font-medium text-primary-orange">
                         {isSending ? "Sending…" : "Receiving…"}
                       </span>
                     </div>
                     <span className="text-xs font-bold text-white">{progress}%</span>
                   </div>
-                  <ProgressBar value={progress} size="sm" color="cyan" />
+                  <ProgressBar value={progress} size="sm" color="primary" />
                 </motion.div>
               ) : (
                 <motion.div
                   key="complete"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-white/5 rounded-xl p-2 border border-white/10 flex items-center justify-between"
+                  className="bg-[#111217]/50 rounded-xl p-2 border border-white/5 flex items-center justify-between"
                 >
                   <div className="flex items-center gap-2 px-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    <span className="text-xs font-medium text-emerald-400">
+                    <CheckCircle2 className={`w-4 h-4 ${file.isSelf ? "text-primary-orange" : "text-emerald-400"}`} />
+                    <span className={`text-xs font-medium ${file.isSelf ? "text-primary-orange" : "text-emerald-400"}`}>
                       {file.isSelf ? "Sent Successfully" : "Received"}
                     </span>
                   </div>
@@ -239,7 +239,7 @@ export function FileMessageCard({ file, onReact, onCancel }: FileMessageProps) {
                     <a
                       href={file.blobUrl}
                       download={file.fileName}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1E40AF] hover:bg-[#3B82F6] text-white text-xs font-semibold transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-xs font-semibold transition-colors border border-emerald-500/20"
                     >
                       <Download className="w-3.5 h-3.5" />
                       Save
@@ -259,10 +259,10 @@ export function FileMessageCard({ file, onReact, onCancel }: FileMessageProps) {
                 key={emoji}
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="px-1.5 py-0.5 rounded-full bg-[#0B1120] border border-[#1E40AF] text-xs flex items-center gap-1 shadow-lg"
+                className="px-1.5 py-0.5 rounded-full bg-[#111217] border border-primary-orange/30 text-xs flex items-center gap-1 shadow-lg"
               >
                 <span>{emoji}</span>
-                {count > 1 && <span className="text-[10px] text-neutral-300 font-medium">{count}</span>}
+                {count > 1 && <span className="text-[10px] text-neutral-400 font-medium">{count}</span>}
               </motion.div>
             ))}
           </div>
@@ -270,7 +270,7 @@ export function FileMessageCard({ file, onReact, onCancel }: FileMessageProps) {
 
         <div className={`flex mt-1 px-1 opacity-0 group-hover:opacity-100 transition-opacity ${file.isSelf ? "justify-end" : "justify-start"}`}>
           <div className="relative">
-            <button onClick={() => setShowPicker(!showPicker)} className="text-neutral-500 hover:text-[#3B82F6] p-1 rounded">
+            <button onClick={() => setShowPicker(!showPicker)} className="text-neutral-500 hover:text-primary-orange p-1 rounded">
               <Smile className="w-4 h-4" />
             </button>
             <AnimatePresence>

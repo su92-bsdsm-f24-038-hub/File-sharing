@@ -173,18 +173,18 @@ export default function DashboardPage() {
       </div>
 
       {/* Header */}
-      <header className="relative z-10 border-b border-white/5 px-6 py-4 bg-white/[0.01] backdrop-blur-md">
+      <header className="relative z-10 border-b border-white/5 px-6 py-4 bg-[#09090B]/50 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-start to-primary-end flex items-center justify-center glow-primary">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-orange to-glow-orange flex items-center justify-center shadow-[0_0_15px_rgba(255,122,26,0.3)]">
               <Zap className="w-4 h-4 text-white" />
             </div>
             <span className="font-bold tracking-tight text-white">Sync</span>
           </Link>
           <div className="flex items-center gap-4">
             <div className="hidden sm:flex items-center gap-2 text-sm text-neutral-400">
-              <div className="w-7 h-7 rounded-full bg-primary-start/10 border border-primary-start/20 flex items-center justify-center">
-                <UserIcon className="w-3.5 h-3.5 text-primary-start" />
+              <div className="w-7 h-7 rounded-full bg-primary-orange/10 border border-primary-orange/20 flex items-center justify-center">
+                <UserIcon className="w-3.5 h-3.5 text-primary-orange" />
               </div>
               <span className="max-w-32 truncate">{user.displayName || user.email}</span>
             </div>
@@ -208,28 +208,35 @@ export default function DashboardPage() {
           {/* Left: Room panel */}
           <div className="lg:col-span-2 flex flex-col gap-5">
             {/* Session card */}
-            <GlassCard className="p-6" glowColor={status === "connected" ? "cyan" : "primary"} glow={status === "connected"}>
-              <div className="flex items-center justify-between mb-5">
+            <GlassCard className="p-8" glowColor={status === "connected" ? "emerald" : "primary"} glow={status === "connected" || status === "waiting"}>
+              <div className="flex items-center justify-between mb-6">
                 <h2 className="font-semibold text-sm text-neutral-300">Session</h2>
                 <ConnectionStatus status={status} expiresAt={expiresAt || undefined} />
               </div>
 
               {/* QR / placeholder */}
-              <div className="flex justify-center mb-5">
+              <div className="flex justify-center mb-8">
                 <AnimatePresence mode="wait">
                   {roomId ? (
                     <motion.div
                       key="qr"
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
+                      initial={{ opacity: 0, scale: 0.8, filter: "blur(10px)" }}
+                      animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                      exit={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
                       className="relative"
                     >
-                      <div className="p-4 rounded-2xl bg-white">
-                        <QRCodeDisplay value={joinUrl} size={168} />
+                      {/* Pulsing Glow behind QR */}
+                      <motion.div 
+                        animate={status === "connected" ? { background: "rgba(16,185,129,0.3)", scale: [1, 1.2, 1] } : { background: "rgba(255,122,26,0.2)", scale: [1, 1.1, 1] }}
+                        transition={{ repeat: Infinity, duration: status === "connected" ? 3 : 2, ease: "easeInOut" }}
+                        className="absolute inset-[-15px] rounded-[32px] blur-xl -z-10"
+                      />
+                      <div className="p-5 rounded-[24px] bg-white shadow-xl">
+                        <QRCodeDisplay value={joinUrl} size={180} />
                       </div>
-                      <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-xl bg-gradient-to-br from-primary-start to-primary-end flex items-center justify-center shadow-[0_0_12px_rgba(59,130,246,0.5)]">
-                        <QrCode className="w-4 h-4 text-white" />
+                      <div className={`absolute -bottom-3 -right-3 w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg transition-colors duration-500 ${status === "connected" ? "bg-emerald-accent shadow-emerald-accent/50" : "bg-gradient-to-br from-primary-orange to-glow-orange shadow-primary-orange/50"}`}>
+                        {status === "connected" ? <Check className="w-5 h-5 text-white" /> : <QrCode className="w-5 h-5 text-white" />}
                       </div>
                     </motion.div>
                   ) : (
@@ -240,11 +247,11 @@ export default function DashboardPage() {
                       exit={{ opacity: 0 }}
                       className="flex flex-col items-center gap-3"
                     >
-                      <div className="w-44 h-44 rounded-2xl border-2 border-dashed border-white/10 flex items-center justify-center">
-                        <QrCode className="w-12 h-12 text-white/15" />
+                      <div className="w-48 h-48 rounded-[24px] border-2 border-dashed border-white/10 bg-white/[0.02] flex items-center justify-center">
+                        <QrCode className="w-12 h-12 text-white/10" />
                       </div>
-                      <p className="text-xs text-neutral-600 text-center">
-                        Click &quot;New Session&quot; to generate a QR code
+                      <p className="text-xs text-neutral-500 text-center max-w-48 mt-2">
+                        Click &quot;New Session&quot; to generate a secure QR code
                       </p>
                     </motion.div>
                   )}
@@ -255,30 +262,32 @@ export default function DashboardPage() {
               <AnimatePresence>
                 {pin && (
                   <motion.div
-                    initial={{ opacity: 0, y: 8 }}
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    className="mb-4"
+                    exit={{ opacity: 0, y: -10 }}
+                    className="mb-6"
                   >
-                    <p className="text-xs text-neutral-600 text-center mb-2">4-digit PIN</p>
-                    <div className="flex items-center justify-center gap-2">
+                    <p className="text-xs text-neutral-500 text-center mb-3">4-digit PIN</p>
+                    <div className="flex items-center justify-center gap-3">
                       {pin.split("").map((digit, i) => (
-                        <div
+                        <motion.div
                           key={i}
-                          className="w-12 h-14 rounded-xl bg-white/[0.06] border border-primary-start/20 flex items-center justify-center text-2xl font-black tracking-widest text-primary-start"
+                          whileHover={{ scale: 1.1, y: -2 }}
+                          className="w-14 h-16 rounded-xl bg-[#111217] border border-white/10 flex items-center justify-center text-3xl font-black tracking-widest text-white shadow-[inset_0_2px_10px_rgba(255,255,255,0.02)] relative overflow-hidden group"
                         >
-                          {digit}
-                        </div>
+                          <div className="absolute inset-0 bg-primary-orange/0 group-hover:bg-primary-orange/10 transition-colors" />
+                          <span className="relative z-10">{digit}</span>
+                        </motion.div>
                       ))}
                       <button
                         onClick={() => copyToClipboard(pin, "pin")}
-                        className="ml-1 p-2 rounded-xl text-neutral-600 hover:text-primary-start hover:bg-primary-start/10 transition-all"
+                        className="ml-2 p-3 rounded-xl text-neutral-500 hover:text-white hover:bg-white/10 transition-all active:scale-95"
                         title="Copy PIN"
                       >
                         {copied === "pin" ? (
-                          <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          <Check className="w-4 h-4 text-emerald-400" />
                         ) : (
-                          <Copy className="w-3.5 h-3.5" />
+                          <Copy className="w-4 h-4" />
                         )}
                       </button>
                     </div>
@@ -290,17 +299,17 @@ export default function DashboardPage() {
               <AnimatePresence>
                 {joinUrl && (
                   <motion.button
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
                     onClick={() => copyToClipboard(joinUrl, "url")}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.03] border border-white/8 text-xs text-neutral-600 hover:text-neutral-400 hover:border-primary-start/20 transition-all mb-4"
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-[#111217] border border-white/10 text-xs text-neutral-400 hover:text-white hover:border-primary-orange/30 transition-all mb-6 group"
                   >
                     <span className="truncate flex-1 text-left">{joinUrl}</span>
                     {copied === "url" ? (
-                      <Check className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                      <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                     ) : (
-                      <Copy className="w-3.5 h-3.5 flex-shrink-0" />
+                      <Copy className="w-4 h-4 flex-shrink-0 group-hover:text-primary-orange transition-colors" />
                     )}
                   </motion.button>
                 )}
@@ -310,10 +319,10 @@ export default function DashboardPage() {
               <AnimatePresence>
                 {error && (
                   <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0 }}
-                    className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2 mb-4"
+                    className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 mb-6"
                   >
                     {error}
                   </motion.p>
@@ -321,30 +330,36 @@ export default function DashboardPage() {
               </AnimatePresence>
 
               {/* New session button */}
-              <Button
-                className="w-full"
-                onClick={createRoom}
-                loading={isCreating}
-                icon={<RefreshCw className="w-4 h-4" />}
-                disabled={status === "connected"}
-              >
-                {roomId ? "New Session" : "Generate Session"}
-              </Button>
+              <div className="w-full">
+                <Button
+                  className={`w-full h-12 rounded-xl transition-all ${status === "connected" ? "bg-white/5 text-neutral-500 border-0" : "bg-gradient-to-r from-primary-orange to-glow-orange shadow-[0_0_20px_rgba(255,122,26,0.3)] hover:shadow-[0_0_30px_rgba(255,122,26,0.4)] border-0 text-white"}`}
+                  onClick={createRoom}
+                  loading={isCreating}
+                  icon={<RefreshCw className="w-4 h-4" />}
+                  disabled={status === "connected"}
+                >
+                  {roomId ? "New Session" : "Generate Session"}
+                </Button>
+              </div>
 
               {status === "connected" && (
-                <p className="text-xs text-emerald-500/70 text-center mt-3">
-                  ✓ Device connected — transfer panel is live
-                </p>
+                <motion.p 
+                  initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}
+                  className="text-xs text-emerald-400 text-center mt-4 flex items-center justify-center gap-1.5"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Device connected — ready to transfer
+                </motion.p>
               )}
             </GlassCard>
 
             {/* Security card */}
-            <GlassCard className="p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <Shield className="w-4 h-4 text-cyan-accent" />
-                <span className="text-xs font-semibold text-neutral-400">Security</span>
+            <GlassCard className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Shield className="w-4 h-4 text-primary-orange" />
+                <span className="text-sm font-semibold text-white">Security</span>
               </div>
-              <ul className="space-y-1.5">
+              <ul className="space-y-2.5">
                 {[
                   "UUID room IDs (crypto-random)",
                   "4-digit PIN required to join",
@@ -352,8 +367,8 @@ export default function DashboardPage() {
                   "Auto-expires after 5 min inactive",
                   "In-memory only — nothing stored",
                 ].map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-xs text-neutral-600">
-                    <span className="text-emerald-500 mt-0.5">•</span>
+                  <li key={item} className="flex items-start gap-2 text-sm text-neutral-400">
+                    <span className="text-primary-orange mt-1 text-[10px]">●</span>
                     {item}
                   </li>
                 ))}
@@ -363,25 +378,27 @@ export default function DashboardPage() {
 
           {/* Right: Transfer panel */}
           <div className="lg:col-span-3">
-            <GlassCard className="h-[600px] flex flex-col overflow-hidden">
-              <div className="px-5 py-4 border-b border-white/5 flex items-center justify-between">
-                <div className="flex items-center gap-2">
+            <GlassCard className="h-[700px] flex flex-col overflow-hidden relative">
+              <div className="absolute inset-0 bg-gradient-to-b from-primary-orange/5 to-transparent pointer-events-none" />
+              
+              <div className="px-6 py-5 border-b border-white/5 flex items-center justify-between relative z-10 bg-[#15171D]/80 backdrop-blur-md">
+                <div className="flex items-center gap-3">
                   <div
-                    className={`w-2 h-2 rounded-full ${
-                      status === "connected" ? "bg-emerald-400" : "bg-neutral-700"
+                    className={`w-2.5 h-2.5 rounded-full ${
+                      status === "connected" ? "bg-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.5)]" : "bg-neutral-600"
                     }`}
                   />
-                  <span className="text-sm font-medium">Transfer</span>
+                  <span className="text-base font-semibold">Transfer Area</span>
                 </div>
                 {peerSocketId && (
-                  <span className="text-xs text-neutral-600 font-mono">
+                  <span className="text-xs text-neutral-500 font-mono bg-white/5 px-2 py-1 rounded-md">
                     peer: {peerSocketId.slice(0, 8)}…
                   </span>
                 )}
               </div>
 
               {status === "connected" && socketRef.current && roomId ? (
-                <div className="flex-1 overflow-hidden">
+                <div className="flex-1 overflow-hidden relative z-10 bg-[#09090B]/40">
                   <TransferPanel
                     socket={socketRef.current}
                     roomId={roomId}
@@ -389,15 +406,15 @@ export default function DashboardPage() {
                   />
                 </div>
               ) : (
-                <div className="flex-1 flex flex-col items-center justify-center gap-4 p-8">
+                <div className="flex-1 flex flex-col items-center justify-center gap-6 p-8 relative z-10">
                   <motion.div
-                    className="w-20 h-20 rounded-3xl bg-primary-start/5 border border-primary-start/10 flex items-center justify-center"
-                    animate={{ scale: [1, 1.04, 1] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                    className="w-24 h-24 rounded-[32px] bg-primary-orange/5 border border-primary-orange/10 flex items-center justify-center shadow-[inset_0_0_40px_rgba(255,122,26,0.05)]"
+                    animate={{ scale: [1, 1.05, 1], rotate: [0, 5, -5, 0] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                   >
-                    <QrCode className="w-9 h-9 text-primary-start/40" />
+                    <QrCode className="w-10 h-10 text-primary-orange/40" />
                   </motion.div>
-                  <p className="text-sm text-neutral-600 text-center max-w-56">
+                  <p className="text-base text-neutral-500 text-center max-w-xs">
                     {status === "waiting"
                       ? "Waiting for a device to scan the QR and connect…"
                       : "Generate a session to start sharing files and text."}
