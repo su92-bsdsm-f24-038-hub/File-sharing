@@ -32,7 +32,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               "focus:outline-none focus:ring-2 focus:border-transparent",
               error
                 ? "border-red-500/50 focus:ring-red-500/40"
-                : "border-white/10 focus:ring-purple-500/40",
+                : "border-white/10 focus:ring-primary-orange/40",
               icon ? "pl-10 pr-4" : "px-4",
               rightElement ? "pr-12" : "",
               className

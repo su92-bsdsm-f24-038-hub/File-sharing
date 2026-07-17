@@ -22,8 +22,8 @@ export function FlowAnimationCard({ className }: FlowAnimationCardProps) {
         >
           <defs>
             <linearGradient id="flow-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#3B82F6" stopOpacity="0" />
-              <stop offset="50%" stopColor="#06B6D4" stopOpacity="1" />
+              <stop offset="0%" stopColor="#FF7A1A" stopOpacity="0" />
+              <stop offset="50%" stopColor="#FF9A3D" stopOpacity="1" />
               <stop offset="100%" stopColor="#10B981" stopOpacity="0" />
             </linearGradient>
             
@@ -64,8 +64,8 @@ export function FlowAnimationCard({ className }: FlowAnimationCardProps) {
           </path>
           
           {/* Central Hub Node (Sync Server) */}
-          {/* Outer breathing ring (Blue/Cyan) */}
-          <circle cx="400" cy="200" r="24" fill="#3B82F6" filter="url(#glow-blur)">
+          {/* Outer breathing ring (Orange) */}
+          <circle cx="400" cy="200" r="24" fill="#FF7A1A" filter="url(#glow-blur)">
             <animate attributeName="r" values="20;32;20" dur="3s" repeatCount="indefinite" />
             <animate attributeName="opacity" values="0.3;0.6;0.3" dur="3s" repeatCount="indefinite" />
           </circle>
@@ -77,7 +77,7 @@ export function FlowAnimationCard({ className }: FlowAnimationCardProps) {
           </circle>
 
           {/* Core dot */}
-          <circle cx="400" cy="200" r="8" fill="#06B6D4" />
+          <circle cx="400" cy="200" r="8" fill="#FF9A3D" />
         </svg>
         
         {/* HTML Nodes positioned over SVG origins */}
@@ -85,42 +85,42 @@ export function FlowAnimationCard({ className }: FlowAnimationCardProps) {
         
         {/* Node 1: Top Left (100, 80) -> x: 16.6%, y: 20% */}
         <motion.div 
-          className="absolute p-2 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md"
+          className="absolute p-2 rounded-xl bg-[#111217] border border-primary-orange/20 backdrop-blur-md shadow-[0_0_15px_rgba(255,122,26,0.15)]"
           style={{ left: "16.6%", top: "20%", transform: "translate(-50%, -50%)" }}
           animate={{ y: [0, -3, 0] }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         >
-          <FileText className="w-5 h-5 text-primary-start" />
+          <FileText className="w-5 h-5 text-primary-orange" />
         </motion.div>
 
         {/* Node 2: Middle-Top Left (100, 160) -> x: 16.6%, y: 40% */}
         <motion.div 
-          className="absolute p-2 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md"
+          className="absolute p-2 rounded-xl bg-[#111217] border border-primary-orange/20 backdrop-blur-md shadow-[0_0_15px_rgba(255,122,26,0.15)]"
           style={{ left: "16.6%", top: "40%", transform: "translate(-50%, -50%)" }}
           animate={{ y: [0, 4, 0] }}
           transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
         >
-          <ImageIcon className="w-5 h-5 text-cyan-accent" />
+          <ImageIcon className="w-5 h-5 text-glow-orange" />
         </motion.div>
 
         {/* Node 3: Middle-Bottom Left (100, 240) -> x: 16.6%, y: 60% */}
         <motion.div 
-          className="absolute p-2 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md"
+          className="absolute p-2 rounded-xl bg-[#111217] border border-primary-orange/20 backdrop-blur-md shadow-[0_0_15px_rgba(255,122,26,0.15)]"
           style={{ left: "16.6%", top: "60%", transform: "translate(-50%, -50%)" }}
           animate={{ y: [0, -4, 0] }}
           transition={{ duration: 3.8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
         >
-          <FileVideo className="w-5 h-5 text-primary-start" />
+          <FileVideo className="w-5 h-5 text-primary-orange" />
         </motion.div>
 
         {/* Node 4: Bottom Left (100, 320) -> x: 16.6%, y: 80% */}
         <motion.div 
-          className="absolute p-2 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md"
+          className="absolute p-2 rounded-xl bg-[#111217] border border-primary-orange/20 backdrop-blur-md shadow-[0_0_15px_rgba(255,122,26,0.15)]"
           style={{ left: "16.6%", top: "80%", transform: "translate(-50%, -50%)" }}
           animate={{ y: [0, 3, 0] }}
           transition={{ duration: 4.2, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
         >
-          <Link2 className="w-5 h-5 text-cyan-accent" />
+          <Link2 className="w-5 h-5 text-glow-orange" />
         </motion.div>
 
       </div>

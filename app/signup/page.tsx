@@ -86,8 +86,8 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
       <div className="pointer-events-none fixed inset-0">
-        <div className="absolute top-[-10%] right-[15%] w-[450px] h-[450px] rounded-full bg-primary-start/20 blur-[120px]" />
-        <div className="absolute bottom-[-5%] left-[10%] w-[350px] h-[350px] rounded-full bg-primary-end/15 blur-[100px]" />
+        <div className="absolute top-[-10%] right-[15%] w-[450px] h-[450px] rounded-full bg-primary-orange/20 blur-[120px]" />
+        <div className="absolute bottom-[-5%] left-[10%] w-[350px] h-[350px] rounded-full bg-glow-orange/15 blur-[100px]" />
       </div>
 
       <motion.div
@@ -98,19 +98,19 @@ export default function SignupPage() {
       >
         <div className="flex flex-col items-center mb-8">
           <Link href="/" className="flex items-center gap-2 mb-6">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-start to-primary-end flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.4)]">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-orange to-glow-orange flex items-center justify-center shadow-[0_0_20px_rgba(255,122,26,0.4)]">
               <Zap className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-xl tracking-tight">Sync</span>
+            <span className="font-bold text-xl tracking-tight text-white">Sync</span>
           </Link>
           <h1 className="text-2xl font-bold">Create your account</h1>
-          <p className="text-sm text-neutral-500 mt-1">Free forever. No credit card.</p>
+          <p className="text-sm text-neutral-400 mt-1">Free forever. No credit card.</p>
         </div>
 
         <GlassCard className="p-8" glow glowColor="primary">
           <Button
             variant="secondary"
-            className="w-full mb-6"
+            className="w-full mb-6 text-primary-orange border-primary-orange/30 hover:bg-primary-orange/10"
             onClick={handleGoogle}
             loading={googleLoading}
             icon={<GoogleIcon />}
@@ -159,7 +159,7 @@ export default function SignupPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="text-neutral-500 hover:text-neutral-300 transition-colors"
+                  className="text-neutral-500 hover:text-primary-orange transition-colors"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -180,7 +180,7 @@ export default function SignupPage() {
                 <button
                   type="button"
                   onClick={() => setShowConfirm((v) => !v)}
-                  className="text-neutral-500 hover:text-neutral-300 transition-colors"
+                  className="text-neutral-500 hover:text-primary-orange transition-colors"
                   aria-label={showConfirm ? "Hide confirm password" : "Show confirm password"}
                 >
                   {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -204,9 +204,9 @@ export default function SignupPage() {
             </Button>
           </form>
 
-          <p className="text-center text-sm text-neutral-600 mt-6">
+          <p className="text-center text-sm text-neutral-500 mt-6">
             Already have an account?{" "}
-            <Link href="/login" className="text-primary-start hover:text-cyan-accent font-medium transition-colors">
+            <Link href="/login" className="text-primary-orange hover:text-white font-medium transition-colors">
               Sign in
             </Link>
           </p>

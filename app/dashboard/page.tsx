@@ -14,6 +14,7 @@ import { parseUserAgent } from "@/lib/utils";
 import { QRCodeDisplay } from "@/components/QRCodeDisplay";
 import { ConnectionStatus } from "@/components/ConnectionStatus";
 import { TransferPanel } from "@/components/TransferPanel";
+import { ProfileModal } from "@/components/ProfileModal";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { LoadingSkeleton } from "@/components/ui/LoadingSkeleton";
@@ -36,6 +37,7 @@ export default function DashboardPage() {
   const [copied, setCopied] = useState<"url" | "pin" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const socketRef = useRef<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
 
@@ -166,10 +168,12 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-indigo-black relative overflow-hidden">
+      <ProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
+
       {/* Background */}
       <div className="pointer-events-none fixed inset-0 z-0">
-        <div className="absolute top-[-10%] left-[5%] w-[500px] h-[500px] rounded-full bg-primary-start/15 blur-[120px] animate-blob" />
-        <div className="absolute bottom-[10%] right-[-5%] w-[400px] h-[400px] rounded-full bg-cyan-accent/10 blur-[120px] animate-blob animation-delay-2000" />
+        <div className="absolute top-[-10%] left-[5%] w-[500px] h-[500px] rounded-full bg-primary-orange/15 blur-[120px] animate-blob" />
+        <div className="absolute bottom-[10%] right-[-5%] w-[400px] h-[400px] rounded-full bg-glow-orange/10 blur-[120px] animate-blob animation-delay-2000" />
       </div>
 
       {/* Header */}
@@ -182,12 +186,15 @@ export default function DashboardPage() {
             <span className="font-bold tracking-tight text-white">Sync</span>
           </Link>
           <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-2 text-sm text-neutral-400">
-              <div className="w-7 h-7 rounded-full bg-primary-orange/10 border border-primary-orange/20 flex items-center justify-center">
-                <UserIcon className="w-3.5 h-3.5 text-primary-orange" />
+            <button 
+              onClick={() => setIsProfileOpen(true)}
+              className="hidden sm:flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-xl border border-white/10"
+            >
+              <div className="w-6 h-6 rounded-full bg-primary-orange/20 border border-primary-orange/30 flex items-center justify-center">
+                <UserIcon className="w-3 h-3 text-primary-orange" />
               </div>
               <span className="max-w-32 truncate">{user.displayName || user.email}</span>
-            </div>
+            </button>
             <Button variant="ghost" size="sm" onClick={handleLogout} icon={<LogOut className="w-4 h-4" />}>
               Sign Out
             </Button>

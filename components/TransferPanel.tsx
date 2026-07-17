@@ -589,9 +589,11 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
             return (
               <motion.div
                 key={key}
-                initial={{ opacity: 0, x: msg.isSelf ? 20 : -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                layout
+                initial={{ opacity: 0, x: msg.isSelf ? 30 : -30, scale: 0.95 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                transition={{ type: "spring", stiffness: 400, damping: 25, mass: 0.8 }}
+                className="w-full"
               >
                 {"text" in msg 
                   ? <TextMessageBubble message={msg} onReact={handleReact} />

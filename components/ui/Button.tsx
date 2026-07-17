@@ -20,9 +20,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variants = {
       primary:
-        "bg-gradient-to-r from-primary-start to-primary-end text-white glow-primary hover:from-[#60A5FA] hover:to-[#22D3EE]",
+        "bg-gradient-to-r from-primary-orange to-glow-orange text-white glow-primary hover:from-[#FFA34D] hover:to-[#FFB067]",
       secondary:
-        "border border-primary-start/30 bg-primary-start/10 text-primary-start hover:bg-primary-start/20 hover:border-primary-start/50",
+        "border border-primary-orange/30 bg-primary-orange/10 text-primary-orange hover:bg-primary-orange/20 hover:border-primary-orange/50",
       ghost:
         "text-neutral-400 hover:text-white hover:bg-white/[0.06]",
       danger:
