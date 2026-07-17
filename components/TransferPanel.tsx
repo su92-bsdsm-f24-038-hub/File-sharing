@@ -341,14 +341,16 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
     const name = overrideName ?? (file instanceof File ? file.name : `voice-note-${Date.now()}.webm`);
     const type = overrideType ?? file.type ?? "audio/webm";
     const size = file.size;
-    cancelledTransfers.current.delete(transferId);
 
     if (size > MAX_FILE_SIZE) {
       setFileError("File exceeds 50 MB limit.");
+      setIsSendingFile(false);
       return;
     }
+    setFileError(null);
 
     const transferId = generateTransferId();
+    cancelledTransfers.current.delete(transferId);
     const totalChunks = Math.ceil(size / CHUNK_SIZE);
 
     const outgoing: FileProgress = {
