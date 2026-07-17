@@ -4,16 +4,16 @@ import { useRef, MouseEvent } from "react";
 import { motion, HTMLMotionProps } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-interface MagneticButtonProps extends HTMLMotionProps<"button"> {
+interface MagneticButtonProps extends HTMLMotionProps<"div"> {
   children: React.ReactNode;
   className?: string;
   intensity?: number;
 }
 
 export function MagneticButton({ children, className, intensity = 0.2, ...props }: MagneticButtonProps) {
-  const ref = useRef<HTMLButtonElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
 
-  const handleMouseMove = (e: MouseEvent<HTMLButtonElement>) => {
+  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
     if (!ref.current) return;
     const { clientX, clientY } = e;
     const { height, width, left, top } = ref.current.getBoundingClientRect();
@@ -30,18 +30,18 @@ export function MagneticButton({ children, className, intensity = 0.2, ...props 
   };
 
   return (
-    <motion.button
+    <motion.div
       ref={ref}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       className={cn(
-        "transition-transform duration-200 ease-out",
+        "transition-transform duration-200 ease-out inline-block",
         className
       )}
       whileTap={{ scale: 0.95 }}
       {...props}
     >
       {children}
-    </motion.button>
+    </motion.div>
   );
 }
