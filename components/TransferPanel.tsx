@@ -513,7 +513,7 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
 
   return (
     <div
-      className="flex flex-col h-full"
+      className="flex flex-col h-full min-h-0 overflow-hidden relative"
       onDragOver={(e) => e.preventDefault()}
       onDrop={handleDrop}
     >
@@ -629,28 +629,41 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
         {isRecording ? (
           <motion.div
             key="recording"
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            initial={{ opacity: 0, y: 30, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            exit={{ opacity: 0, y: 30, scale: 0.8 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
             className="mx-4 mb-3"
           >
-            <GlassCard glow glowColor="cyan" className="p-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center relative">
+            <GlassCard glow glowColor="primary" className="p-6 flex flex-col items-center gap-4 border-primary-orange/50 shadow-[0_0_40px_rgba(255,122,26,0.15)] relative overflow-hidden">
+              {/* Pulsing background sweep */}
+              <motion.div 
+                animate={{ x: ["-100%", "200%"] }}
+                transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-orange/10 to-transparent skew-x-12"
+              />
+              
+              <div className="w-16 h-16 rounded-full flex items-center justify-center relative z-10">
                 <motion.div
-                  animate={{ scale: [1, 1.5, 1], opacity: [0.8, 0, 0.8] }}
+                  animate={{ scale: [1, 1.8, 1], opacity: [0.8, 0, 0.8] }}
                   transition={{ repeat: Infinity, duration: 1.5 }}
-                  className="absolute inset-0 bg-[#22D3EE] rounded-full"
+                  className="absolute inset-0 bg-primary-orange rounded-full"
                 />
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#1E40AF] to-[#3B82F6] flex items-center justify-center relative z-10 text-white shadow-lg">
-                  <Mic className="w-5 h-5" />
+                <motion.div
+                  animate={{ scale: [1, 1.4, 1], opacity: [0.5, 0, 0.5] }}
+                  transition={{ repeat: Infinity, duration: 1.5, delay: 0.2 }}
+                  className="absolute inset-0 bg-glow-orange rounded-full"
+                />
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-orange to-glow-orange flex items-center justify-center relative z-20 text-white shadow-[0_0_20px_rgba(255,122,26,0.5)]">
+                  <Mic className="w-6 h-6 animate-pulse" />
                 </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-medium text-cyan-accent">Recording Audio...</span>
-                  <span className="text-xs font-bold text-white tabular-nums">{formatTime(recordingSeconds)}</span>
+              <div className="w-full relative z-10">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-bold text-primary-orange animate-pulse">Recording Voice Note…</span>
+                  <span className="text-sm font-black text-white tabular-nums bg-white/10 px-2 py-0.5 rounded-md">{formatTime(recordingSeconds)}</span>
                 </div>
-                <Waveform isPlaying={true} color="#22D3EE" className="w-full opacity-80" />
+                <Waveform isPlaying={true} color="#FF7A1A" className="w-full opacity-90 h-8" />
               </div>
             </GlassCard>
           </motion.div>

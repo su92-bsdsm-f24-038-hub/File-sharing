@@ -384,8 +384,8 @@ export default function DashboardPage() {
           </div>
 
           {/* Right: Transfer panel */}
-          <div className="lg:col-span-3">
-            <GlassCard className="h-[700px] flex flex-col overflow-hidden relative">
+          <div className="lg:col-span-3 min-h-0">
+            <GlassCard className="h-[700px] flex flex-col overflow-hidden relative min-h-0">
               <div className="absolute inset-0 bg-gradient-to-b from-primary-orange/5 to-transparent pointer-events-none" />
               
               <div className="px-6 py-5 border-b border-white/5 flex items-center justify-between relative z-10 bg-[#15171D]/80 backdrop-blur-md">
@@ -405,7 +405,7 @@ export default function DashboardPage() {
               </div>
 
               {status === "connected" && socketRef.current && roomId ? (
-                <div className="flex-1 overflow-hidden relative z-10 bg-[#09090B]/40">
+                <div className="flex-1 overflow-hidden relative z-10 bg-[#09090B]/40 flex flex-col min-h-0">
                   <TransferPanel
                     socket={socketRef.current}
                     roomId={roomId}

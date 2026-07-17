@@ -107,8 +107,14 @@ export function FileMessageCard({ file, onReact, onCancel }: FileMessageProps) {
                     <Waveform isPlaying={isPlaying} color={file.isSelf ? "#FF7A1A" : "#10B981"} className="w-full" />
                   </>
                 ) : (
-                  <div className="w-full flex flex-col justify-center gap-1.5 h-10">
-                    <div className="flex items-center justify-between text-xs font-medium">
+                  <div className="w-full flex flex-col justify-center gap-1.5 h-10 relative overflow-hidden rounded-lg">
+                    {/* Shimmer effect */}
+                    <motion.div 
+                      animate={{ x: ["-100%", "200%"] }}
+                      transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-orange/10 to-transparent skew-x-12"
+                    />
+                    <div className="relative z-10 flex items-center justify-between text-xs font-medium px-1">
                       <span className="text-primary-orange flex items-center gap-1">
                         <Loader2 className="w-3 h-3 animate-spin" />
                         {isSending ? "Sending…" : "Receiving…"}
@@ -208,9 +214,15 @@ export function FileMessageCard({ file, onReact, onCancel }: FileMessageProps) {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="bg-[#111217]/50 rounded-xl p-3 border border-white/5"
+                  className="bg-[#111217]/50 rounded-xl p-3 border border-white/5 relative overflow-hidden"
                 >
-                  <div className="flex items-center justify-between mb-2">
+                  {/* Shimmer effect */}
+                  <motion.div 
+                    animate={{ x: ["-100%", "200%"] }}
+                    transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-orange/5 to-transparent skew-x-12"
+                  />
+                  <div className="relative z-10 flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <Loader2 className="w-3.5 h-3.5 text-primary-orange animate-spin" />
                       <span className="text-xs font-medium text-primary-orange">
