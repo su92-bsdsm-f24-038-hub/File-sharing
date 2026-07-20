@@ -18,6 +18,8 @@ import { FileMessageCard } from "@/components/FileMessage";
 import { Button } from "@/components/ui/Button";
 import { generateTransferId } from "@/lib/utils";
 import { parseUserAgent } from "@/lib/utils";
+import { MultiSelect } from "@/components/ui/multi-selector";
+import { FileUploader, FileInput, FileUploaderContent, FileUploaderItem } from "@/components/ui/file-upload";
 
 const CHUNK_SIZE = 256 * 1024; // 256 KB
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
@@ -34,7 +36,7 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
   const [text, setText] = useState("");
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [connectedDevices, setConnectedDevices] = useState<RoomDevice[]>([]);
-  const [targetId, setTargetId] = useState<string>("all");
+  const [targetId, setTargetId] = useState<string[]>(["all"]);
   const blobUrls = useRef<Set<string>>(new Set());
   const [fileError, setFileError] = useState<string | null>(null);
   const [isSendingFile, setIsSendingFile] = useState(false);
@@ -67,12 +69,10 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
   useEffect(() => {
     const handleState = (data: { devices: RoomDevice[] }) => {
       setConnectedDevices(data.devices);
-      setTargetId((prev) => {
-        if (prev !== "all" && !data.devices.find((d) => d.socketId === prev)) {
-          return "all";
-        }
-        return prev;
-      });
+        setTargetId((prev) => {
+          const valid = prev.filter(p => p === "all" || data.devices.find(d => d.socketId === p));
+          return valid.length > 0 ? valid : ["all"];
+        });
     };
     socket.on("room:state", handleState);
     return () => { socket.off("room:state", handleState); };
@@ -377,7 +377,7 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
         fileType: type,
         fileSize: size,
         totalChunks,
-        targetId: targetId === "all" ? undefined : targetId,
+        targetId: targetId.includes("all") ? undefined : targetId[0],
       }, resolve);
     });
 
@@ -413,7 +413,7 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
           transferId,
           chunkIndex: i,
           data: chunk,
-          targetId: targetId === "all" ? undefined : targetId,
+          targetId: targetId.includes("all") ? undefined : targetId[0],
         }, (ackRes) => {
           if (ackRes.success) {
             setMessages((prev) =>
@@ -463,8 +463,9 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
 
     const trimmed = text.trim();
     if (trimmed) {
-      const msgId = generateTransferId(); // generate ONCE, shared with receiver
-      socket.emit("transfer:text", { roomId, id: msgId, text: trimmed, targetId: targetId === "all" ? undefined : targetId }, (res) => {
+      const msgId = generateTransferId();
+      const target = targetId.includes("all") ? undefined : targetId[0];
+      socket.emit("transfer:text", { roomId, id: msgId, text: trimmed, targetId: target }, (res) => {
         if (res.success) {
           const msg: TextMessage = {
             id: msgId,   // ← same id the receiver will use
@@ -519,7 +520,22 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
     >
       {/* Connected Devices Panel */}
       <div className="px-4 py-3 border-b border-white/5 bg-white/[0.02]">
-        <h3 className="text-xs font-medium text-neutral-400 mb-2 uppercase tracking-wider">Connected Devices</h3>
+        <h3 className="text-xs font-medium text-neutral-400 mb-2 uppercase tracking-wider">Send To</h3>
+        <MultiSelect
+          options={[
+            { value: "all", label: "All Connected Devices", icon: Monitor },
+            ...connectedDevices.filter(d => d.socketId !== socketId).map(d => ({
+              value: d.socketId,
+              label: d.deviceName,
+              icon: d.deviceType === "mobile" ? Smartphone : d.deviceType === "tablet" ? Tablet : Monitor
+            }))
+          ]}
+          defaultValue={targetId}
+          onValueChange={setTargetId}
+          placeholder="Select devices"
+          maxCount={5}
+        />
+      </div>
         <div className="flex flex-wrap gap-2">
           <motion.button
             initial={{ scale: 0.8, opacity: 0 }}
@@ -569,7 +585,8 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 scrollbar-thin scrollbar-thumb-white/10">
+      <div className="flex-1 px-4 py-4 p-[2px] w-full max-w-full relative min-h-0 [background:linear-gradient(45deg,#080b11,rgba(255,122,26,0.1)_50%,#172033)_padding-box,conic-gradient(from_var(--border-angle),rgba(255,122,26,0.3)_80%,#FF7A1A_86%,#FF9A3D_90%,#FF7A1A_94%,rgba(255,122,26,0.3))_border-box] border-transparent border-t-2 border-b-2 overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-y-auto space-y-3 scrollbar-thin scrollbar-thumb-white/10 px-2 relative">
         <AnimatePresence initial={false}>
           {messages.length === 0 && (
             <motion.div
@@ -604,6 +621,7 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
           })}
         </AnimatePresence>
         <div ref={bottomRef} />
+        </div>
       </div>
 
       {/* Error */}
@@ -742,23 +760,23 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
         </AnimatePresence>
 
         <div className="flex items-end gap-2 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur p-2">
-          {/* File button */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            className="hidden"
-            onChange={handleFileSelect}
-            id="file-upload"
-          />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isSendingFile || isRecording}
-            className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-neutral-500 hover:text-primary-start hover:bg-primary-start/10 transition-all disabled:opacity-40"
-            title="Attach file"
+          {/* File button with Dropzone Trigger */}
+          <FileUploader
+            value={pendingFiles}
+            onValueChange={setPendingFiles}
+            dropzoneOptions={{ multiple: true, maxFiles: 10, maxSize: 50 * 1024 * 1024 }}
+            className="flex-shrink-0"
           >
-            <Paperclip className="w-4.5 h-4.5" />
-          </button>
+            <FileInput>
+              <button
+                disabled={isSendingFile || isRecording}
+                className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-neutral-500 hover:text-primary-orange hover:bg-primary-orange/10 transition-all disabled:opacity-40"
+                title="Attach file (Drag & Drop supported)"
+              >
+                <Paperclip className="w-4.5 h-4.5" />
+              </button>
+            </FileInput>
+          </FileUploader>
 
           {/* Text area */}
           <textarea
