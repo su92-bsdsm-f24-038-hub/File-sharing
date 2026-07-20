@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminAuth } from "@/lib/firebase-admin";
+import { getAdminAuth } from "@/lib/firebase-admin";
 
 const GUMROAD_PRODUCT_ID = process.env.GUMROAD_PRODUCT_ID!;
 
@@ -11,12 +11,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Missing license key or token." }, { status: 400 });
     }
 
+    const adminAuth = getAdminAuth();
+
     // Verify Firebase token to get uid
     let uid: string;
     try {
       const decoded = await adminAuth.verifyIdToken(token);
       uid = decoded.uid;
-    } catch {
+    } catch (e) {
+      console.error("[verify-license] token error:", e);
       return NextResponse.json({ success: false, error: "Invalid session. Please log in again." }, { status: 401 });
     }
 
@@ -32,6 +35,7 @@ export async function POST(req: NextRequest) {
     });
 
     const gumroadData = await gumroadRes.json();
+    console.log("[verify-license] gumroad response:", JSON.stringify(gumroadData));
 
     if (!gumroadData.success) {
       return NextResponse.json(
@@ -40,7 +44,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check the purchase wasn't refunded or chargebacked
     const purchase = gumroadData.purchase;
     if (purchase?.refunded || purchase?.chargebacked) {
       return NextResponse.json(
@@ -49,12 +52,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Set Firebase custom claim
+    // Grant Pro via Firebase custom claim
     await adminAuth.setCustomUserClaims(uid, { plan: "pro" });
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("[verify-license]", err);
+    console.error("[verify-license] unexpected error:", err);
     return NextResponse.json({ success: false, error: "Server error. Please try again." }, { status: 500 });
   }
 }

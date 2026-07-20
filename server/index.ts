@@ -11,17 +11,17 @@ import * as admin from "firebase-admin";
 try {
   const envPath = path.resolve(process.cwd(), ".env.local");
   if (fs.existsSync(envPath)) {
-    const envConfig = fs.readFileSync(envPath, "utf-8").split("\n");
-    for (const line of envConfig) {
-      const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
-      if (match) {
-        const key = match[1];
-        let value = match[2] || "";
-        if (value.startsWith('"') && value.endsWith('"')) {
-          value = value.slice(1, -1).replace(/\\n/g, "\n");
-        }
-        if (!process.env[key]) process.env[key] = value;
+    const raw = fs.readFileSync(envPath, "utf-8");
+    // Match KEY="...multi-line..." or KEY=value
+    const re = /^([\w.]+)\s*=\s*("[\s\S]*?"|[^\n]*)/gm;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(raw)) !== null) {
+      const key = m[1];
+      let value = m[2];
+      if (value.startsWith('"') && value.endsWith('"')) {
+        value = value.slice(1, -1).replace(/\\n/g, "\n");
       }
+      if (!process.env[key]) process.env[key] = value;
     }
   }
 } catch (e) {
