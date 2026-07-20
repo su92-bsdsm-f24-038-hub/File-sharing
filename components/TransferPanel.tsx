@@ -715,6 +715,14 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
 
         <div className="flex items-end gap-2 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur p-2">
           {/* File button with Dropzone Trigger */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            className="hidden"
+            onChange={handleFileSelect}
+            id="file-upload"
+          />
           <FileUploader
             value={pendingFiles}
             onValueChange={setPendingFiles}
@@ -723,6 +731,7 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
           >
             <FileInput>
               <button
+                onClick={() => fileInputRef.current?.click()}
                 disabled={isSendingFile || isRecording}
                 className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-neutral-500 hover:text-primary-orange hover:bg-primary-orange/10 transition-all disabled:opacity-40"
                 title="Attach file (Drag & Drop supported)"
