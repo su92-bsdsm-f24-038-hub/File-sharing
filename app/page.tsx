@@ -87,40 +87,38 @@ export default function LandingPage() {
       />
 
       <AnimatePresence>
-        {/* Navbar Container */}
-        <div className="fixed top-6 left-0 right-0 z-50 flex justify-center pointer-events-none">
-          <motion.nav 
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="flex items-center justify-between px-6 py-3 w-[90%] max-w-5xl bg-[#111111] rounded-full border border-white/5 shadow-2xl pointer-events-auto"
-          >
-            {/* Logo */}
-            <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold tracking-tight text-white">
-                <span className="text-primary-orange text-3xl leading-none">“</span>
-                Sync<span className="text-primary-orange">.</span>
-              </span>
-            </div>
+        {/* Navbar */}
+        <motion.nav 
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="fixed top-6 left-0 right-0 mx-auto z-50 flex items-center justify-between px-6 py-3 w-[90%] max-w-5xl bg-[#111111] rounded-full border border-white/5 shadow-2xl"
+        >
+          {/* Logo */}
+          <div className="flex items-center gap-2">
+            <span className="text-2xl font-bold tracking-tight text-white">
+              <span className="text-primary-orange text-3xl leading-none">“</span>
+              Sync<span className="text-primary-orange">.</span>
+            </span>
+          </div>
 
-            {/* Links / CTA */}
-            <div className="flex items-center gap-3">
-              <Link href="/join">
-                <Button variant="ghost" size="sm" className="text-primary-orange hover:text-glow-orange hover:bg-white/5">Enter Code</Button>
-              </Link>
-              <Link href="/login">
-                <Button variant="ghost" size="sm" className="hover:bg-white/5 text-neutral-300">Sign In</Button>
-              </Link>
-              <Link href="/signup">
-                <MagneticButton intensity={0.1}>
-                  <Button size="sm" className="bg-white hover:bg-neutral-200 text-black rounded-full px-5 py-4 font-bold shadow-md flex items-center gap-2 border-0">
-                    Get Started
-                  </Button>
-                </MagneticButton>
-              </Link>
-            </div>
-          </motion.nav>
-        </div>
+          {/* Links (Center) */}
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-neutral-300">
+            <Link href="/join" className="hover:text-white transition-colors">Enter Code</Link>
+            <Link href="/login" className="hover:text-white transition-colors">Sign In</Link>
+          </div>
+
+          {/* CTA (Right) */}
+          <div>
+            <Link href="/signup">
+              <MagneticButton intensity={0.1}>
+                <Button size="sm" className="bg-white hover:bg-neutral-200 text-black rounded-full px-6 py-4 font-bold shadow-md flex items-center gap-2 border-0">
+                  Get Started
+                </Button>
+              </MagneticButton>
+            </Link>
+          </div>
+        </motion.nav>
 
         {/* Hero */}
         <section ref={heroRef} className="relative z-10 pt-20 pb-20 px-6 w-full text-center">
