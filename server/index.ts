@@ -3,14 +3,52 @@ import { createServer } from "http";
 import { Server, Socket } from "socket.io";
 import cors from "cors";
 import crypto from "crypto";
+import fs from "fs";
+import path from "path";
+import * as admin from "firebase-admin";
+
+// Load .env.local manually since ts-node doesn't do it by default
+try {
+  const envPath = path.resolve(process.cwd(), ".env.local");
+  if (fs.existsSync(envPath)) {
+    const envConfig = fs.readFileSync(envPath, "utf-8").split("\n");
+    for (const line of envConfig) {
+      const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
+      if (match) {
+        const key = match[1];
+        let value = match[2] || "";
+        if (value.startsWith('"') && value.endsWith('"')) {
+          value = value.slice(1, -1).replace(/\\n/g, "\n");
+        }
+        if (!process.env[key]) process.env[key] = value;
+      }
+    }
+  }
+} catch (e) {
+  console.log("Could not load .env.local");
+}
+
+if (!admin.apps.length && process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+    }),
+  });
+}
 
 const app = express();
 const httpServer = createServer(app);
 
 const FRONTEND_URLS = process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : ["http://localhost:3000", "https://quickdrop.agent0s.dev", "http://quickdrop.agent0s.dev"];
 const PORT = parseInt(process.env.SOCKET_PORT || "4000", 10);
-const ROOM_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
+const ROOM_EXPIRY_MS_FREE = 5 * 60 * 1000; // 5 minutes
+const ROOM_EXPIRY_MS_PRO = 30 * 60 * 1000; // 30 minutes
+const MAX_FILE_SIZE_FREE = 50 * 1024 * 1024; // 50 MB
+const MAX_FILE_SIZE_PRO = 200 * 1024 * 1024; // 200 MB
+const MAX_DEVICES_FREE = 2;
+const MAX_DEVICES_PRO = 4;
 const CHUNK_SIZE = 256 * 1024; // 256 KB
 const MAX_ROOMS_PER_MINUTE = 5;
 
@@ -50,9 +88,11 @@ interface Room {
   pin: string;
   createdAt: number;
   lastActivity: number;
-  devices: Map<string, RoomDevice>; // max 4
+  devices: Map<string, RoomDevice>; // max 2 for free, 4 for pro
   pendingFiles: Map<string, PendingFile>;
   expiryTimer: ReturnType<typeof setTimeout>;
+  isPro: boolean;
+  ownerId: string;
 }
 
 // ─── State ────────────────────────────────────────────────────────────────────
@@ -96,14 +136,16 @@ function checkRateLimit(userId: string): boolean {
 }
 
 function scheduleRoomExpiry(roomId: string): ReturnType<typeof setTimeout> {
+  const room = rooms.get(roomId);
+  const expiryMs = room && room.isPro ? ROOM_EXPIRY_MS_PRO : ROOM_EXPIRY_MS_FREE;
   return setTimeout(() => {
-    const room = rooms.get(roomId);
-    if (!room) return;
-    room.devices.forEach((_, socketId) => {
+    const r = rooms.get(roomId);
+    if (!r) return;
+    r.devices.forEach((_, socketId) => {
       io.to(socketId).emit("room:expired", { reason: "inactivity" });
     });
     rooms.delete(roomId);
-  }, ROOM_EXPIRY_MS);
+  }, expiryMs);
 }
 
 function broadcastRoomState(roomId: string) {
@@ -160,19 +202,39 @@ io.on("connection", (socket: Socket) => {
 
   socket.on(
     "room:create",
-    (
-      { userId, deviceName, deviceType }: { userId: string; deviceName: string; deviceType: DeviceType },
+    async (
+      { token, deviceName, deviceType }: { token: string; deviceName: string; deviceType: DeviceType },
       callback: (res: { success: boolean; roomId?: string; pin?: string; error?: string }) => void
     ) => {
-      if (!userId) return callback({ success: false, error: "unauthenticated" });
+      if (!token) return callback({ success: false, error: "unauthenticated" });
+      
+      let userId: string;
+      let isPro = false;
+      try {
+        const decodedToken = await admin.auth().verifyIdToken(token);
+        userId = decodedToken.uid;
+        isPro = decodedToken.plan === "pro";
+      } catch (e) {
+        return callback({ success: false, error: "invalid_token" });
+      }
+
       if (!checkRateLimit(userId)) {
         return callback({ success: false, error: "rate_limit_exceeded" });
       }
 
+      // Check max rooms (Free: 1 active room, Pro: unlimited)
+      if (!isPro) {
+        let activeCount = 0;
+        for (const r of rooms.values()) {
+          if (r.ownerId === userId) activeCount++;
+        }
+        if (activeCount >= 1) {
+          return callback({ success: false, error: "free_plan_room_limit" });
+        }
+      }
+
       const roomId = crypto.randomUUID();
       const pin = generatePin();
-
-      const expiryTimer = scheduleRoomExpiry(roomId);
 
       const room: Room = {
         id: roomId,
@@ -181,10 +243,13 @@ io.on("connection", (socket: Socket) => {
         lastActivity: Date.now(),
         devices: new Map([[socket.id, { socketId: socket.id, deviceName: deviceName || "Unknown", deviceType: deviceType || "desktop", joinedAt: Date.now() }]]),
         pendingFiles: new Map(),
-        expiryTimer,
+        expiryTimer: setTimeout(() => {}, 0), // Will be overridden immediately below
+        isPro,
+        ownerId: userId,
       };
 
       rooms.set(roomId, room);
+      room.expiryTimer = scheduleRoomExpiry(roomId);
       socket.join(roomId);
       socket.data.roomId = roomId;
 
@@ -205,7 +270,8 @@ io.on("connection", (socket: Socket) => {
     ) => {
       const room = rooms.get(roomId);
       if (!room) return callback({ success: false, error: "room_not_found" });
-      if (room.devices.size >= 4) return callback({ success: false, error: "room_full" });
+      const maxDevices = room.isPro ? MAX_DEVICES_PRO : MAX_DEVICES_FREE;
+      if (room.devices.size >= maxDevices) return callback({ success: false, error: "room_full" });
       if (room.pin !== pin) return callback({ success: false, error: "invalid_pin" });
 
       room.devices.set(socket.id, { socketId: socket.id, deviceName: deviceName || "Unknown", deviceType: deviceType || "desktop", joinedAt: Date.now() });
@@ -283,9 +349,18 @@ io.on("connection", (socket: Socket) => {
       if (!room || !room.devices.has(socket.id)) {
         return callback({ success: false, error: "not_in_room" });
       }
-      if (fileSize > MAX_FILE_SIZE) {
+
+      const maxFileSize = room.isPro ? MAX_FILE_SIZE_PRO : MAX_FILE_SIZE_FREE;
+      if (fileSize > maxFileSize) {
         return callback({ success: false, error: "file_too_large" });
       }
+
+      if (!room.isPro) {
+        if (fileType.startsWith("video/") || fileName.endsWith(".zip") || fileType.includes("zip")) {
+          return callback({ success: false, error: "pro_plan_required" });
+        }
+      }
+
       if (!isAllowedExtension(fileName)) {
         return callback({ success: false, error: "file_type_not_allowed" });
       }

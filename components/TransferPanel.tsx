@@ -21,6 +21,9 @@ import { parseUserAgent } from "@/lib/utils";
 import { MultiSelect } from "@/components/ui/multi-selector";
 import { FileUploader, FileInput, FileUploaderContent, FileUploaderItem } from "@/components/ui/file-upload";
 import { ImageAnnotationEditor } from "@/components/ImageAnnotationEditor";
+import { ProLock } from "@/components/ProLock";
+import { useAuth } from "@/context/AuthContext";
+import { Clock } from "lucide-react";
 
 const CHUNK_SIZE = 256 * 1024; // 256 KB
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
@@ -38,9 +41,14 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [connectedDevices, setConnectedDevices] = useState<RoomDevice[]>([]);
   const [targetId, setTargetId] = useState<string[]>(["all"]);
+  const [selfDestruct, setSelfDestruct] = useState<boolean>(false);
   const [fileToAnnotateIndex, setFileToAnnotateIndex] = useState<number | null>(null);
   const blobUrls = useRef<Set<string>>(new Set());
   const [fileError, setFileError] = useState<string | null>(null);
+  
+  const { isPro } = useAuth();
+  const maxFileSize = isPro ? 200 * 1024 * 1024 : 50 * 1024 * 1024;
+  const maxVoiceNoteSeconds = isPro ? 3600 : 30; // 1 hr vs 30s
   const [isSendingFile, setIsSendingFile] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -484,10 +492,19 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
       });
     }
 
-    for (const f of filesToSend) {
+    // Validate video/zip for Pro
+    const validFiles = filesToSend.filter((f) => {
+      if (!isPro && (f.type.startsWith("video/") || f.name.endsWith(".zip") || f.type.includes("zip"))) {
+        setFileError(`Pro plan required to send video or zip files (${f.name})`);
+        return false;
+      }
+      return true;
+    });
+
+    for (const f of validFiles) {
       await sendFile(f);
     }
-  }, [socket, roomId, socketId, text, pendingFiles, sendFile, targetId]);
+  }, [socket, roomId, socketId, text, pendingFiles, sendFile, targetId, isPro]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -522,7 +539,19 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
     >
       {/* Connected Devices Panel */}
       <div className="px-4 py-3 border-b border-white/5 bg-white/[0.02]">
-        <h3 className="text-xs font-medium text-neutral-400 mb-2 uppercase tracking-wider">Send To</h3>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-xs font-medium text-neutral-400 uppercase tracking-wider">Send To</h3>
+          <ProLock featureName="Self-Destruct Timer">
+            <button 
+              onClick={() => setSelfDestruct(!selfDestruct)}
+              className={`h-6 px-2 rounded flex items-center gap-1 transition-colors ${selfDestruct ? "bg-red-500/10 border border-red-500/30 text-red-400" : "bg-white/5 border border-white/10 text-neutral-400"}`}
+              title="Self-Destruct Timer (Pro)"
+            >
+              <Clock className="w-3 h-3" />
+              <span className="text-[10px] font-bold">30s</span>
+            </button>
+          </ProLock>
+        </div>
         <MultiSelect
           options={[
             { value: "all", label: "All Connected Devices", icon: Monitor },
@@ -704,13 +733,15 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
                   <Paperclip className="w-3.5 h-3.5 text-primary-start" />
                   <span className="text-xs text-neutral-300 max-w-32 truncate">{f.name}</span>
                   {f.type.startsWith("image/") && (
-                    <button
-                      onClick={() => setFileToAnnotateIndex(i)}
-                      className="text-neutral-500 hover:text-room-accent ml-1"
-                      title="Annotate Image"
-                    >
-                      <Pencil className="w-3 h-3" />
-                    </button>
+                    <ProLock featureName="Draw-on-Image">
+                      <button
+                        onClick={() => setFileToAnnotateIndex(i)}
+                        className="text-neutral-500 hover:text-room-accent ml-1"
+                        title="Annotate Image"
+                      >
+                        <Pencil className="w-3 h-3" />
+                      </button>
+                    </ProLock>
                   )}
                   <button
                     onClick={() => setPendingFiles((prev) => prev.filter((_, index) => index !== i))}
@@ -736,8 +767,18 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
           />
           <FileUploader
             value={pendingFiles}
-            onValueChange={setPendingFiles}
-            dropzoneOptions={{ multiple: true, maxFiles: 10, maxSize: 50 * 1024 * 1024 }}
+            onValueChange={(files) => {
+              if (!files) return;
+              const hasRestricted = !isPro && files.some(f => f.type.startsWith("video/") || f.name.endsWith(".zip") || f.type.includes("zip"));
+              if (hasRestricted) {
+                setFileError("Pro plan required for video and zip files.");
+                // Filter them out
+                setPendingFiles(files.filter(f => !(f.type.startsWith("video/") || f.name.endsWith(".zip") || f.type.includes("zip"))));
+              } else {
+                setPendingFiles(files);
+              }
+            }}
+            dropzoneOptions={{ multiple: true, maxFiles: 10, maxSize: maxFileSize }}
             className="flex-shrink-0"
           >
             <FileInput>

@@ -10,12 +10,15 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { UltrasonicReceiver } from "@/lib/ultrasonic";
+import { ProLock } from "@/components/ProLock";
+import { useAuth } from "@/context/AuthContext";
 
 export default function EnterCodePage() {
   const [pin, setPin] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isListening, setIsListening] = useState(false);
+  const { isPro } = useAuth();
   const router = useRouter();
 
   const handleJoin = async (e: React.FormEvent) => {
@@ -132,22 +135,24 @@ export default function EnterCodePage() {
               <div className="h-px flex-1 bg-white/10" />
             </div>
 
-            <Button
-              type="button"
-              variant="secondary"
-              className="w-full bg-white/5 hover:bg-white/10 text-neutral-300"
-              onClick={handleListen}
-              disabled={isListening}
-            >
-              {isListening ? (
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-primary-orange animate-pulse" />
-                  Listening...
-                </div>
-              ) : (
-                "Listen for nearby session"
-              )}
-            </Button>
+            <ProLock featureName="Sound-Based Pairing">
+              <Button
+                type="button"
+                variant="secondary"
+                className="w-full bg-white/5 hover:bg-white/10 text-neutral-300"
+                onClick={handleListen}
+                disabled={isListening}
+              >
+                {isListening ? (
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-primary-orange animate-pulse" />
+                    Listening...
+                  </div>
+                ) : (
+                  "Listen for nearby session"
+                )}
+              </Button>
+            </ProLock>
           </form>
         </GlassCard>
       </motion.div>

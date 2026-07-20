@@ -1,12 +1,12 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Check, Copy, Clock, Smile } from "lucide-react";
 import { TextMessage as TMsg } from "@/types";
 import { useState } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { ReactionPicker } from "@/components/ReactionPicker";
-import { AnimatePresence } from "framer-motion";
+import { ProLock } from "@/components/ProLock";
 
 interface TextMessageProps {
   message: TMsg;
@@ -94,13 +94,15 @@ export function TextMessageBubble({ message, onReact }: TextMessageProps) {
             )}
           </button>
           <div className="relative">
-            <button
-              onClick={() => setShowPicker(!showPicker)}
-              className="text-[10px] text-neutral-500 hover:text-primary-start transition-colors flex items-center justify-center w-5 h-5 rounded hover:bg-white/5"
-              title="React"
-            >
-              <Smile className="w-3.5 h-3.5" />
-            </button>
+            <ProLock featureName="Transfer Reactions">
+              <button
+                onClick={() => setShowPicker(!showPicker)}
+                className="text-[10px] text-neutral-500 hover:text-primary-start transition-colors flex items-center justify-center w-5 h-5 rounded hover:bg-white/5"
+                title="React"
+              >
+                <Smile className="w-3.5 h-3.5" />
+              </button>
+            </ProLock>
             <AnimatePresence>
               {showPicker && (
                 <ReactionPicker

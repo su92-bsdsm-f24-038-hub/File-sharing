@@ -24,6 +24,8 @@ import { auth } from "@/lib/firebase";
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  plan: "free" | "pro";
+  isPro: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (name: string, email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
@@ -39,10 +41,21 @@ const googleProvider = new GoogleAuthProvider();
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [plan, setPlan] = useState<"free" | "pro">("free");
+  const isPro = plan === "pro";
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        // Force refresh to get the latest custom claims from webhook
+        const tokenResult = await firebaseUser.getIdTokenResult(true);
+        const currentPlan = tokenResult.claims.plan === "pro" ? "pro" : "free";
+        setPlan(currentPlan);
+        setUser(firebaseUser);
+      } else {
+        setUser(null);
+        setPlan("free");
+      }
       setLoading(false);
     });
     return () => unsubscribe();
@@ -76,7 +89,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, signIn, signUp, signInWithGoogle, logout, resetPassword, updateUserPassword }}
+      value={{
+        user,
+        loading,
+        plan,
+        isPro,
+        signIn,
+        signUp,
+        signInWithGoogle,
+        logout,
+        resetPassword,
+        updateUserPassword,
+      }}
     >
       {children}
     </AuthContext.Provider>

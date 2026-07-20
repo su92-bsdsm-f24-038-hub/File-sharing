@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Zap, LogOut, RefreshCw, Copy, Check, QrCode,
-  Shield, User as UserIcon,
+  Shield, User as UserIcon, Trash2
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import Link from "next/link";
@@ -18,6 +18,7 @@ import { QRCodeDisplay } from "@/components/QRCodeDisplay";
 import { ConnectionStatus } from "@/components/ConnectionStatus";
 import { TransferPanel } from "@/components/TransferPanel";
 import { ProfileModal } from "@/components/ProfileModal";
+import { ProLock } from "@/components/ProLock";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { LoadingSkeleton } from "@/components/ui/LoadingSkeleton";
@@ -28,7 +29,7 @@ import { ServerToClientEvents, ClientToServerEvents } from "@/types";
 const ROOM_EXPIRY_MS = 5 * 60 * 1000;
 
 export default function DashboardPage() {
-  const { user, loading, logout } = useAuth();
+  const { user, loading, logout, isPro } = useAuth();
   const router = useRouter();
 
   const [roomId, setRoomId] = useState<string | null>(null);
@@ -58,9 +59,22 @@ export default function DashboardPage() {
   // Auth guard
   useEffect(() => {
     if (!loading && !user) {
-      router.replace("/login");
+      router.push("/login");
     }
   }, [user, loading, router]);
+
+  useEffect(() => {
+    // Check for upgraded success
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get("upgraded") === "true") {
+        // Show success animation or toast here
+        alert("Success! You have been upgraded to Sync Pro.");
+        // Remove param from URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+  }, []);
 
   // Socket event handlers
   const setupSocketListeners = useCallback(
@@ -127,7 +141,18 @@ export default function DashboardPage() {
     setupSocketListeners(socket);
 
     const { deviceName, deviceType } = parseUserAgent(navigator.userAgent);
-    socket.emit("room:create", { userId: user.uid, deviceName, deviceType }, (res) => {
+    let token = "";
+    try {
+      token = await user.getIdToken();
+    } catch (e) {
+      console.error("Failed to get ID token", e);
+      setStatus("error");
+      setError("Failed to authenticate.");
+      setIsCreating(false);
+      return;
+    }
+
+    socket.emit("room:create", { token, deviceName, deviceType }, (res) => {
       setIsCreating(false);
       if (res.success && res.roomId && res.pin) {
         setRoomId(res.roomId);
@@ -140,6 +165,8 @@ export default function DashboardPage() {
         setError(
           res.error === "rate_limit_exceeded"
             ? "Too many rooms created. Wait 1 minute."
+            : res.error === "free_plan_room_limit"
+            ? "Free plan limit reached (1 active room)."
             : "Failed to create room. Is the socket server running?"
         );
       }
@@ -241,6 +268,9 @@ export default function DashboardPage() {
                 <UserIcon className="w-3 h-3 text-primary-orange" />
               </div>
               <span className="max-w-32 truncate">{user.displayName || user.email}</span>
+              {isPro && (
+                <span className="bg-gradient-to-r from-primary-orange to-glow-orange text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-[0_0_10px_rgba(255,122,26,0.3)] ml-1">PRO</span>
+              )}
             </button>
             <Button variant="ghost" size="sm" onClick={handleLogout} icon={<LogOut className="w-4 h-4" />}>
               Sign Out
@@ -348,15 +378,17 @@ export default function DashboardPage() {
                     
                     {/* Pair by Sound */}
                     <div className="mt-4 flex justify-center">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={handleTransmit}
-                        className={`text-xs gap-2 transition-all ${isTransmitting ? "bg-room-accent text-white border-transparent" : "bg-white/5"}`}
-                      >
-                        <span className={`w-2 h-2 rounded-full ${isTransmitting ? "bg-white animate-pulse" : "bg-room-accent"}`} />
-                        {isTransmitting ? "Transmitting Sound..." : "Pair by Sound"}
-                      </Button>
+                      <ProLock featureName="Sound-Based Pairing">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={handleTransmit}
+                          className={`text-xs gap-2 transition-all ${isTransmitting ? "bg-room-accent text-white border-transparent" : "bg-white/5"}`}
+                        >
+                          <span className={`w-2 h-2 rounded-full ${isTransmitting ? "bg-white animate-pulse" : "bg-room-accent"}`} />
+                          {isTransmitting ? "Transmitting Sound..." : "Pair by Sound"}
+                        </Button>
+                      </ProLock>
                     </div>
                   </motion.div>
                 )}
@@ -415,21 +447,25 @@ export default function DashboardPage() {
                     animate={{ opacity: 1, height: "auto" }}
                     className="w-full flex items-center gap-2 overflow-hidden"
                   >
-                    <Button
-                      variant="secondary"
-                      className="flex-1 h-10 rounded-xl bg-white/5 border border-primary-orange/20 hover:border-primary-orange/40 hover:bg-white/10 text-xs transition-colors"
-                      onClick={createRoom}
-                      disabled={isCreating}
-                    >
-                      <span className="truncate">Send to {lastDeviceState.deviceName} again</span>
-                    </Button>
-                    <button
-                      onClick={() => { clearLastDevice(); setLastDeviceState(null); }}
-                      className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20 text-neutral-500 transition-colors shrink-0"
-                      title="Forget device"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <ProLock featureName="Send to Last Device">
+                      <div className="flex-1 flex gap-2">
+                        <Button
+                          variant="secondary"
+                          className="flex-1 h-10 rounded-xl bg-white/5 border border-primary-orange/20 hover:border-primary-orange/40 hover:bg-white/10 text-xs transition-colors"
+                          onClick={createRoom}
+                          disabled={isCreating}
+                        >
+                          <span className="truncate">Send to {lastDeviceState.deviceName} again</span>
+                        </Button>
+                        <button
+                          onClick={() => { clearLastDevice(); setLastDeviceState(null); }}
+                          className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20 text-neutral-500 transition-colors shrink-0"
+                          title="Forget device"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </ProLock>
                   </motion.div>
                 )}
               </div>

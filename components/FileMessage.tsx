@@ -7,6 +7,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { ReactionPicker } from "@/components/ReactionPicker";
 import { useState, useRef, useEffect } from "react";
 import { Waveform } from "@/components/ui/Waveform";
+import { ProLock } from "@/components/ProLock";
 
 interface FileMessageProps {
   file: FileProgress;
@@ -152,9 +153,11 @@ export function FileMessageCard({ file, onReact, onCancel }: FileMessageProps) {
 
           <div className={`flex mt-1 px-1 opacity-0 group-hover:opacity-100 transition-opacity ${file.isSelf ? "justify-end" : "justify-start"}`}>
             <div className="relative">
-              <button onClick={() => setShowPicker(!showPicker)} className="text-neutral-500 hover:text-primary-orange p-1 rounded">
-                <Smile className="w-4 h-4" />
-              </button>
+              <ProLock featureName="Transfer Reactions">
+                <button onClick={() => setShowPicker(!showPicker)} className="text-neutral-500 hover:text-primary-orange p-1 rounded">
+                  <Smile className="w-4 h-4" />
+                </button>
+              </ProLock>
               <AnimatePresence>
                 {showPicker && (
                   <ReactionPicker onSelect={(emoji) => { onReact(file.transferId, emoji); setShowPicker(false); }} />
@@ -282,9 +285,11 @@ export function FileMessageCard({ file, onReact, onCancel }: FileMessageProps) {
 
         <div className={`flex mt-1 px-1 opacity-0 group-hover:opacity-100 transition-opacity ${file.isSelf ? "justify-end" : "justify-start"}`}>
           <div className="relative">
-            <button onClick={() => setShowPicker(!showPicker)} className="text-neutral-500 hover:text-primary-orange p-1 rounded">
-              <Smile className="w-4 h-4" />
-            </button>
+            <ProLock featureName="Transfer Reactions">
+              <button onClick={() => setShowPicker(!showPicker)} className="text-neutral-500 hover:text-primary-orange p-1 rounded">
+                <Smile className="w-4 h-4" />
+              </button>
+            </ProLock>
             <AnimatePresence>
               {showPicker && (
                 <ReactionPicker onSelect={(emoji) => { onReact(file.transferId, emoji); setShowPicker(false); }} />

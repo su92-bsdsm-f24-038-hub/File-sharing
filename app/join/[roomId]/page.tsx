@@ -12,6 +12,7 @@ import { z } from "zod";
 import { getSocket } from "@/lib/socket";
 import { parseUserAgent } from "@/lib/utils";
 import { getThemeForRoom, getThemeVariantConfig } from "@/lib/theme";
+import { useAuth } from "@/context/AuthContext";
 import { TransferPanel } from "@/components/TransferPanel";
 import { ConnectionStatus } from "@/components/ConnectionStatus";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -43,6 +44,7 @@ function JoinPageInner() {
   const [status, setStatus] = useState<RoomStatus>("idle");
   const socketRef = useRef<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
   const hasAutoJoined = useRef(false);
+  const { isPro } = useAuth();
 
   const {
     register,
@@ -121,7 +123,7 @@ function JoinPageInner() {
     socketRef.current?.off("room:expired");
   };
 
-  const roomTheme = getThemeVariantConfig(getThemeForRoom(roomId));
+  const roomTheme = getThemeVariantConfig(isPro ? getThemeForRoom(roomId) : "default");
 
   return (
     <div 
