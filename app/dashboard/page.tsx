@@ -12,7 +12,6 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { getSocket } from "@/lib/socket";
 import { parseUserAgent, getLastDevice, setLastDevice, clearLastDevice, LastDevice } from "@/lib/utils";
-import { UltrasonicTransmitter } from "@/lib/ultrasonic";
 import { getThemeForRoom, getThemeVariantConfig } from "@/lib/theme";
 import { QRCodeDisplay } from "@/components/QRCodeDisplay";
 import { ConnectionStatus } from "@/components/ConnectionStatus";
@@ -43,15 +42,12 @@ export default function DashboardPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [lastDeviceState, setLastDeviceState] = useState<LastDevice | null>(null);
-  const [isTransmitting, setIsTransmitting] = useState(false);
-  const transmitterRef = useRef<UltrasonicTransmitter | null>(null);
 
   useEffect(() => {
-    setLastDeviceState(getLastDevice());
-    transmitterRef.current = new UltrasonicTransmitter();
-    return () => {
-      transmitterRef.current?.stop();
-    };
+    const saved = getLastDevice();
+    if (saved) {
+      setLastDeviceState(saved);
+    }
   }, []);
 
   const socketRef = useRef<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
@@ -130,11 +126,6 @@ export default function DashboardPage() {
     socketRef.current = socket;
     setSocketId(socket.id || "");
 
-    if (transmitterRef.current) {
-      transmitterRef.current.stop();
-      setIsTransmitting(false);
-    }
-
     socket.off("room:peer_joined");
     socket.off("room:peer_left");
     socket.off("room:expired");
@@ -188,23 +179,9 @@ export default function DashboardPage() {
     };
   }, [user]);
 
-  const handleTransmit = async () => {
-    if (!roomId || !pin || !transmitterRef.current) return;
-    if (isTransmitting) {
-      transmitterRef.current.stop();
-      setIsTransmitting(false);
-    } else {
-      setIsTransmitting(true);
-      await transmitterRef.current.start(`${roomId}:${pin}`);
-      // Auto stop after duration
-      setTimeout(() => setIsTransmitting(false), 5000);
-    }
-  };
-
   const handleLogout = async () => {
-    socketRef.current?.disconnect();
     await logout();
-    router.replace("/login");
+    router.push("/");
   };
 
   const copyToClipboard = async (text: string, type: "url" | "pin") => {
@@ -375,21 +352,6 @@ export default function DashboardPage() {
                         )}
                       </button>
                     </div>
-                    
-                    {/* Pair by Sound */}
-                    <div className="mt-4 flex justify-center">
-                      <ProLock featureName="Sound-Based Pairing">
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={handleTransmit}
-                          className={`text-xs gap-2 transition-all ${isTransmitting ? "bg-room-accent text-white border-transparent" : "bg-white/5"}`}
-                        >
-                          <span className={`w-2 h-2 rounded-full ${isTransmitting ? "bg-white animate-pulse" : "bg-room-accent"}`} />
-                          {isTransmitting ? "Transmitting Sound..." : "Pair by Sound"}
-                        </Button>
-                      </ProLock>
-                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -447,25 +409,23 @@ export default function DashboardPage() {
                     animate={{ opacity: 1, height: "auto" }}
                     className="w-full flex items-center gap-2 overflow-hidden"
                   >
-                    <ProLock featureName="Send to Last Device">
-                      <div className="flex-1 flex gap-2">
-                        <Button
-                          variant="secondary"
-                          className="flex-1 h-10 rounded-xl bg-white/5 border border-primary-orange/20 hover:border-primary-orange/40 hover:bg-white/10 text-xs transition-colors"
-                          onClick={createRoom}
-                          disabled={isCreating}
-                        >
-                          <span className="truncate">Send to {lastDeviceState.deviceName} again</span>
-                        </Button>
-                        <button
-                          onClick={() => { clearLastDevice(); setLastDeviceState(null); }}
-                          className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20 text-neutral-500 transition-colors shrink-0"
-                          title="Forget device"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </ProLock>
+                    <div className="flex-1 flex gap-2">
+                      <Button
+                        variant="secondary"
+                        className="flex-1 h-10 rounded-xl bg-white/5 border border-primary-orange/20 hover:border-primary-orange/40 hover:bg-white/10 text-xs transition-colors"
+                        onClick={createRoom}
+                        disabled={isCreating}
+                      >
+                        <span className="truncate">Send to {lastDeviceState.deviceName} again</span>
+                      </Button>
+                      <button
+                        onClick={() => { clearLastDevice(); setLastDeviceState(null); }}
+                        className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20 text-neutral-500 transition-colors shrink-0"
+                        title="Forget device"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </motion.div>
                 )}
               </div>

@@ -75,12 +75,11 @@ export default function PricingPage() {
               <FeatureItem included>5-minute session expiry</FeatureItem>
               <FeatureItem included>Voice notes up to 30s</FeatureItem>
               <FeatureItem included>End-to-End Encryption</FeatureItem>
+              <FeatureItem included>"Send to Last Device"</FeatureItem>
               
               <div className="h-px bg-white/10 my-2" />
               
               <FeatureItem included={false}>Draw-on-image markup</FeatureItem>
-              <FeatureItem included={false}>Sound-based (ultrasonic) pairing</FeatureItem>
-              <FeatureItem included={false}>"Send to Last Device"</FeatureItem>
               <FeatureItem included={false}>Transfer reactions</FeatureItem>
               <FeatureItem included={false}>Session accent themes</FeatureItem>
               <FeatureItem included={false}>Video/ZIP inline preview</FeatureItem>
@@ -119,7 +118,6 @@ export default function PricingPage() {
               <div className="h-px bg-white/10 my-2" />
               
               <FeatureItem included>Draw-on-image markup tool</FeatureItem>
-              <FeatureItem included>Sound-based (ultrasonic) pairing</FeatureItem>
               <FeatureItem included>"Send to Last Device"</FeatureItem>
               <FeatureItem included>Transfer reactions (all emojis)</FeatureItem>
               <FeatureItem included>Session accent themes</FeatureItem>

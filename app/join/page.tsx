@@ -9,7 +9,6 @@ import { Logo } from "@/components/Logo";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { UltrasonicReceiver } from "@/lib/ultrasonic";
 import { ProLock } from "@/components/ProLock";
 import { useAuth } from "@/context/AuthContext";
 
@@ -17,7 +16,6 @@ export default function EnterCodePage() {
   const [pin, setPin] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isListening, setIsListening] = useState(false);
   const { isPro } = useAuth();
   const router = useRouter();
 
@@ -44,33 +42,6 @@ export default function EnterCodePage() {
       setError("Failed to connect to the server.");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleListen = async () => {
-    try {
-      const receiver = new UltrasonicReceiver();
-      setIsListening(true);
-      setError(null);
-      await receiver.start((data) => {
-        // e.g. "abc123def:4321"
-        const [detectedRoom, detectedPin] = data.split(":");
-        if (detectedRoom && detectedPin) {
-          receiver.stop();
-          router.push(`/join/${detectedRoom}?pin=${detectedPin}`);
-        }
-      });
-      // Stop after 10s if nothing found
-      setTimeout(() => {
-        receiver.stop();
-        if (isListening) {
-          setIsListening(false);
-          setError("No nearby sessions detected.");
-        }
-      }, 10000);
-    } catch (e) {
-      setIsListening(false);
-      setError("Microphone access denied or not available.");
     }
   };
 
@@ -128,31 +99,6 @@ export default function EnterCodePage() {
             >
               Join Session
             </Button>
-            
-            <div className="flex items-center gap-4 mt-2">
-              <div className="h-px flex-1 bg-white/10" />
-              <span className="text-xs text-neutral-500 uppercase tracking-widest">or</span>
-              <div className="h-px flex-1 bg-white/10" />
-            </div>
-
-            <ProLock featureName="Sound-Based Pairing">
-              <Button
-                type="button"
-                variant="secondary"
-                className="w-full bg-white/5 hover:bg-white/10 text-neutral-300"
-                onClick={handleListen}
-                disabled={isListening}
-              >
-                {isListening ? (
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-primary-orange animate-pulse" />
-                    Listening...
-                  </div>
-                ) : (
-                  "Listen for nearby session"
-                )}
-              </Button>
-            </ProLock>
           </form>
         </GlassCard>
       </motion.div>
