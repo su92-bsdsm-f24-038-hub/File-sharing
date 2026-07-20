@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Send, Paperclip, X, AlertCircle, Monitor, Smartphone,
-  Tablet, Mic, MicOff, StopCircle, Play, Pause, Trash2,
+  Tablet, Mic, MicOff, StopCircle, Play, Pause, Trash2, Pencil,
 } from "lucide-react";
 import { Socket } from "socket.io-client";
 import {
@@ -20,6 +20,7 @@ import { generateTransferId } from "@/lib/utils";
 import { parseUserAgent } from "@/lib/utils";
 import { MultiSelect } from "@/components/ui/multi-selector";
 import { FileUploader, FileInput, FileUploaderContent, FileUploaderItem } from "@/components/ui/file-upload";
+import { ImageAnnotationEditor } from "@/components/ImageAnnotationEditor";
 
 const CHUNK_SIZE = 256 * 1024; // 256 KB
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
@@ -37,6 +38,7 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [connectedDevices, setConnectedDevices] = useState<RoomDevice[]>([]);
   const [targetId, setTargetId] = useState<string[]>(["all"]);
+  const [fileToAnnotateIndex, setFileToAnnotateIndex] = useState<number | null>(null);
   const blobUrls = useRef<Set<string>>(new Set());
   const [fileError, setFileError] = useState<string | null>(null);
   const [isSendingFile, setIsSendingFile] = useState(false);
@@ -607,32 +609,32 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
             className="mx-4 mb-3"
           >
-            <GlassCard glow glowColor="primary" className="p-6 flex flex-col items-center gap-4 border-primary-orange/50 shadow-[0_0_40px_rgba(255,122,26,0.15)] relative overflow-hidden">
+            <GlassCard glow glowColor="primary" className="p-6 flex flex-col items-center gap-4 border-[var(--room-accent)]/50 shadow-[0_0_40px_var(--room-glow)] relative overflow-hidden">
               {/* Pulsing background sweep */}
               <motion.div 
                 animate={{ x: ["-100%", "200%"] }}
                 transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-orange/10 to-transparent skew-x-12"
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-[var(--room-accent)]/10 to-transparent skew-x-12"
               />
               
               <div className="w-16 h-16 rounded-full flex items-center justify-center relative z-10">
                 <motion.div
                   animate={{ scale: [1, 1.8, 1], opacity: [0.8, 0, 0.8] }}
                   transition={{ repeat: Infinity, duration: 1.5 }}
-                  className="absolute inset-0 bg-primary-orange rounded-full"
+                  className="absolute inset-0 bg-room-accent rounded-full"
                 />
                 <motion.div
                   animate={{ scale: [1, 1.4, 1], opacity: [0.5, 0, 0.5] }}
                   transition={{ repeat: Infinity, duration: 1.5, delay: 0.2 }}
-                  className="absolute inset-0 bg-glow-orange rounded-full"
+                  className="absolute inset-0 bg-room-glow rounded-full"
                 />
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-orange to-glow-orange flex items-center justify-center relative z-20 text-white shadow-[0_0_20px_rgba(255,122,26,0.5)]">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-room-accent to-room-glow flex items-center justify-center relative z-20 text-white shadow-lg shadow-room-accent/50">
                   <Mic className="w-6 h-6 animate-pulse" />
                 </div>
               </div>
               <div className="w-full relative z-10">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-bold text-primary-orange animate-pulse">Recording Voice Note…</span>
+                  <span className="text-sm font-bold text-room-accent animate-pulse">Recording Voice Note…</span>
                   <span className="text-sm font-black text-white tabular-nums bg-white/10 px-2 py-0.5 rounded-md">{formatTime(recordingSeconds)}</span>
                 </div>
                 <Waveform isPlaying={true} color="#FF7A1A" className="w-full opacity-90 h-8" />
@@ -701,6 +703,15 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
                 <div key={i} className="flex items-center gap-1.5 bg-primary-start/10 border border-primary-start/20 px-2.5 py-1.5 rounded-lg">
                   <Paperclip className="w-3.5 h-3.5 text-primary-start" />
                   <span className="text-xs text-neutral-300 max-w-32 truncate">{f.name}</span>
+                  {f.type.startsWith("image/") && (
+                    <button
+                      onClick={() => setFileToAnnotateIndex(i)}
+                      className="text-neutral-500 hover:text-room-accent ml-1"
+                      title="Annotate Image"
+                    >
+                      <Pencil className="w-3 h-3" />
+                    </button>
+                  )}
                   <button
                     onClick={() => setPendingFiles((prev) => prev.filter((_, index) => index !== i))}
                     className="text-neutral-500 hover:text-red-400 ml-1"
@@ -782,6 +793,21 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
           Drop files anywhere · Max 50 MB · Voice notes up to 2 min
         </p>
       </div>
+      {/* Image Annotation Editor Overlay */}
+      {fileToAnnotateIndex !== null && pendingFiles[fileToAnnotateIndex] && (
+        <ImageAnnotationEditor
+          file={pendingFiles[fileToAnnotateIndex]}
+          onSave={(newFile) => {
+            setPendingFiles((prev) => {
+              const newFiles = [...prev];
+              newFiles[fileToAnnotateIndex] = newFile;
+              return newFiles;
+            });
+            setFileToAnnotateIndex(null);
+          }}
+          onCancel={() => setFileToAnnotateIndex(null)}
+        />
+      )}
     </div>
   );
 }

@@ -11,6 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { getSocket } from "@/lib/socket";
 import { parseUserAgent } from "@/lib/utils";
+import { getThemeForRoom, getThemeVariantConfig } from "@/lib/theme";
 import { TransferPanel } from "@/components/TransferPanel";
 import { ConnectionStatus } from "@/components/ConnectionStatus";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -120,8 +121,16 @@ function JoinPageInner() {
     socketRef.current?.off("room:expired");
   };
 
+  const roomTheme = getThemeVariantConfig(getThemeForRoom(roomId));
+
   return (
-    <div className="min-h-screen bg-indigo-black flex flex-col relative overflow-hidden">
+    <div 
+      className="min-h-screen bg-indigo-black flex flex-col relative overflow-hidden"
+      style={{
+        "--room-accent": roomTheme.primary,
+        "--room-glow": roomTheme.glow,
+      } as React.CSSProperties}
+    >
       {/* Animated Gradient Mesh */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-primary-start/10 blur-[120px] animate-blob" />

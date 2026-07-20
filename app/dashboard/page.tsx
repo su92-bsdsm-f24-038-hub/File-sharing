@@ -11,7 +11,9 @@ import { Logo } from "@/components/Logo";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { getSocket } from "@/lib/socket";
-import { parseUserAgent } from "@/lib/utils";
+import { parseUserAgent, getLastDevice, setLastDevice, clearLastDevice, LastDevice } from "@/lib/utils";
+import { UltrasonicTransmitter } from "@/lib/ultrasonic";
+import { getThemeForRoom, getThemeVariantConfig } from "@/lib/theme";
 import { QRCodeDisplay } from "@/components/QRCodeDisplay";
 import { ConnectionStatus } from "@/components/ConnectionStatus";
 import { TransferPanel } from "@/components/TransferPanel";
@@ -39,6 +41,17 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [lastDeviceState, setLastDeviceState] = useState<LastDevice | null>(null);
+  const [isTransmitting, setIsTransmitting] = useState(false);
+  const transmitterRef = useRef<UltrasonicTransmitter | null>(null);
+
+  useEffect(() => {
+    setLastDeviceState(getLastDevice());
+    transmitterRef.current = new UltrasonicTransmitter();
+    return () => {
+      transmitterRef.current?.stop();
+    };
+  }, []);
 
   const socketRef = useRef<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
 
@@ -55,6 +68,15 @@ export default function DashboardPage() {
       socket.on("room:peer_joined", ({ socketId: peerId }) => {
         setPeerSocketId(peerId);
         setStatus("connected");
+      });
+
+      socket.on("room:state", ({ devices }) => {
+        const peer = devices.find((d) => d.socketId !== socket.id);
+        if (peer) {
+          const dev = { deviceName: peer.deviceName, deviceType: peer.deviceType };
+          setLastDevice(dev);
+          setLastDeviceState(dev);
+        }
       });
 
       socket.on("room:peer_left", () => {
@@ -94,6 +116,11 @@ export default function DashboardPage() {
     socketRef.current = socket;
     setSocketId(socket.id || "");
 
+    if (transmitterRef.current) {
+      transmitterRef.current.stop();
+      setIsTransmitting(false);
+    }
+
     socket.off("room:peer_joined");
     socket.off("room:peer_left");
     socket.off("room:expired");
@@ -128,10 +155,24 @@ export default function DashboardPage() {
     return () => {
       socket.off("connect");
       socket.off("room:peer_joined");
+      socket.off("room:state");
       socket.off("room:peer_left");
       socket.off("room:expired");
     };
   }, [user]);
+
+  const handleTransmit = async () => {
+    if (!roomId || !pin || !transmitterRef.current) return;
+    if (isTransmitting) {
+      transmitterRef.current.stop();
+      setIsTransmitting(false);
+    } else {
+      setIsTransmitting(true);
+      await transmitterRef.current.start(`${roomId}:${pin}`);
+      // Auto stop after duration
+      setTimeout(() => setIsTransmitting(false), 5000);
+    }
+  };
 
   const handleLogout = async () => {
     socketRef.current?.disconnect();
@@ -167,8 +208,16 @@ export default function DashboardPage() {
 
   if (!user) return null;
 
+  const roomTheme = getThemeVariantConfig(getThemeForRoom(roomId));
+
   return (
-    <div className="min-h-screen bg-indigo-black relative overflow-hidden">
+    <div 
+      className="min-h-screen bg-indigo-black relative overflow-hidden"
+      style={{
+        "--room-accent": roomTheme.primary,
+        "--room-glow": roomTheme.glow,
+      } as React.CSSProperties}
+    >
       <ProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
 
       {/* Background */}
@@ -233,14 +282,14 @@ export default function DashboardPage() {
                     >
                       {/* Pulsing Glow behind QR */}
                       <motion.div 
-                        animate={status === "connected" ? { background: "rgba(16,185,129,0.3)", scale: [1, 1.2, 1] } : { background: "rgba(255,122,26,0.2)", scale: [1, 1.1, 1] }}
+                        animate={status === "connected" ? { background: "rgba(16,185,129,0.3)", scale: [1, 1.2, 1] } : { background: roomTheme.glow, scale: [1, 1.1, 1] }}
                         transition={{ repeat: Infinity, duration: status === "connected" ? 3 : 2, ease: "easeInOut" }}
                         className="absolute inset-[-15px] rounded-[32px] blur-xl -z-10"
                       />
                       <div className="p-5 rounded-[24px] bg-white shadow-xl">
                         <QRCodeDisplay value={joinUrl} size={180} />
                       </div>
-                      <div className={`absolute -bottom-3 -right-3 w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg transition-colors duration-500 ${status === "connected" ? "bg-emerald-accent shadow-emerald-accent/50" : "bg-gradient-to-br from-primary-orange to-glow-orange shadow-primary-orange/50"}`}>
+                      <div className={`absolute -bottom-3 -right-3 w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg transition-colors duration-500 ${status === "connected" ? "bg-emerald-accent shadow-emerald-accent/50" : "bg-room-accent shadow-room-accent/50"}`}>
                         {status === "connected" ? <Check className="w-5 h-5 text-white" /> : <QrCode className="w-5 h-5 text-white" />}
                       </div>
                     </motion.div>
@@ -296,6 +345,19 @@ export default function DashboardPage() {
                         )}
                       </button>
                     </div>
+                    
+                    {/* Pair by Sound */}
+                    <div className="mt-4 flex justify-center">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={handleTransmit}
+                        className={`text-xs gap-2 transition-all ${isTransmitting ? "bg-room-accent text-white border-transparent" : "bg-white/5"}`}
+                      >
+                        <span className={`w-2 h-2 rounded-full ${isTransmitting ? "bg-white animate-pulse" : "bg-room-accent"}`} />
+                        {isTransmitting ? "Transmitting Sound..." : "Pair by Sound"}
+                      </Button>
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -335,7 +397,7 @@ export default function DashboardPage() {
               </AnimatePresence>
 
               {/* New session button */}
-              <div className="w-full">
+              <div className="w-full flex flex-col gap-2">
                 <Button
                   className={`w-full h-12 rounded-xl transition-all ${status === "connected" ? "bg-white/5 text-neutral-500 border-0" : "bg-gradient-to-r from-primary-orange to-glow-orange shadow-[0_0_20px_rgba(255,122,26,0.3)] hover:shadow-[0_0_30px_rgba(255,122,26,0.4)] border-0 text-white"}`}
                   onClick={createRoom}
@@ -345,6 +407,31 @@ export default function DashboardPage() {
                 >
                   {roomId ? "New Session" : "Generate Session"}
                 </Button>
+
+                {/* Quick Action: Send to Last Device */}
+                {lastDeviceState && status !== "connected" && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }} 
+                    animate={{ opacity: 1, height: "auto" }}
+                    className="w-full flex items-center gap-2 overflow-hidden"
+                  >
+                    <Button
+                      variant="secondary"
+                      className="flex-1 h-10 rounded-xl bg-white/5 border border-primary-orange/20 hover:border-primary-orange/40 hover:bg-white/10 text-xs transition-colors"
+                      onClick={createRoom}
+                      disabled={isCreating}
+                    >
+                      <span className="truncate">Send to {lastDeviceState.deviceName} again</span>
+                    </Button>
+                    <button
+                      onClick={() => { clearLastDevice(); setLastDeviceState(null); }}
+                      className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20 text-neutral-500 transition-colors shrink-0"
+                      title="Forget device"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </motion.div>
+                )}
               </div>
 
               {status === "connected" && (

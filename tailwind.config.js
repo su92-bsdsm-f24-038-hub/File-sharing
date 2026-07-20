@@ -14,6 +14,8 @@ module.exports = {
         "card-bg": "#15171D",
         "primary-orange": "#FF7A1A",
         "glow-orange": "#FF9A3D",
+        "room-accent": "var(--room-accent, #FF7A1A)",
+        "room-glow": "var(--room-glow, rgba(255, 122, 26, 0.4))",
         "cyan-accent": "#3B82F6", // Downgraded to secondary functional
         "emerald-accent": "#10B981", // Reserved for success/connected
       },

@@ -21,6 +21,33 @@ export function formatDuration(ms: number): string {
   return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
 }
 
+export interface LastDevice {
+  deviceName: string;
+  deviceType: DeviceType;
+}
+
+const LAST_DEVICE_KEY = "sync_last_device";
+
+export function setLastDevice(device: LastDevice) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(LAST_DEVICE_KEY, JSON.stringify(device));
+}
+
+export function getLastDevice(): LastDevice | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(LAST_DEVICE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function clearLastDevice() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(LAST_DEVICE_KEY);
+}
+
 export function generateTransferId(): string {
   return Math.random().toString(36).slice(2, 11) + Date.now().toString(36);
 }
