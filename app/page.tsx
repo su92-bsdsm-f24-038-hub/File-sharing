@@ -69,18 +69,18 @@ export default function LandingPage() {
   }, []);
 
   const reviews = [
-    { name: "Alice", username: "@alice", body: "Sync is insanely fast! Never going back.", img: "bg-primary-orange" },
-    { name: "Bob", username: "@bob", body: "Finally a tool that doesn't use the cloud.", img: "bg-blue-500" },
-    { name: "Charlie", username: "@charlie", body: "The P2P transfers are magical.", img: "bg-green-500" },
-    { name: "Diana", username: "@diana", body: "Beautiful UI and it just works.", img: "bg-purple-500" },
-    { name: "Eve", username: "@eve", body: "I love the end-to-end encryption.", img: "bg-pink-500" },
-    { name: "Frank", username: "@frank", body: "No size limits? Count me in.", img: "bg-yellow-500" },
+    { name: "React", username: "@reactjs", body: "The library for web and native user interfaces.", img: "text-[#61DAFB]", icon: "⚛️" },
+    { name: "Next.js", username: "@nextjs", body: "The React Framework for the Web.", img: "text-white", icon: "▲" },
+    { name: "Tailwind CSS", username: "@tailwindcss", body: "Rapidly build modern websites without ever leaving your HTML.", img: "text-[#38B2AC]", icon: "🌊" },
+    { name: "Framer Motion", username: "@framer", body: "A production-ready motion library for React.", img: "text-[#E90265]", icon: "✨" },
+    { name: "GSAP", username: "@gsap", body: "Professional-grade animation for the modern web.", img: "text-[#88CE02]", icon: "🟢" },
+    { name: "Lucide", username: "@lucide", body: "Beautiful & consistent icons.", img: "text-red-500", icon: "🎨" },
   ];
   const firstRow = reviews.slice(0, reviews.length / 2);
   const secondRow = reviews.slice(reviews.length / 2);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-indigo-black">
+    <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/40 via-[#09090B] to-[#09090B]">
       <div 
         ref={scrollProgressRef} 
         className="fixed top-0 left-0 h-1 w-full bg-gradient-to-r from-primary-orange to-glow-orange origin-left scale-x-0 z-50 shadow-[0_0_10px_rgba(255,122,26,0.8)]"
@@ -132,17 +132,6 @@ export default function LandingPage() {
             viewport={{ once: true }}
             className="relative z-10 flex flex-col items-center gap-8 mt-12 max-w-5xl mx-auto"
           >
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <span className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold bg-primary-orange/10 border border-primary-orange/20 text-primary-orange backdrop-blur-md shadow-[0_0_20px_rgba(255,122,26,0.15)]">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary-orange animate-pulse" />
-                Real-time · No cloud · Secure Peer-to-Peer
-              </span>
-            </motion.div>
-
             <h1 className="text-6xl md:text-8xl font-extrabold tracking-tighter leading-[1.05]">
               <motion.span className="inline-block">Drop anything.</motion.span>
               <br />
@@ -258,7 +247,7 @@ export default function LandingPage() {
               {firstRow.map((review) => (
                 <figure key={review.username} className="relative w-64 cursor-pointer overflow-hidden rounded-xl border border-white/10 bg-white/5 p-4 hover:bg-white/10">
                   <div className="flex flex-row items-center gap-2">
-                    <div className={`rounded-full w-8 h-8 ${review.img}`}></div>
+                    <div className={`flex items-center justify-center rounded-full w-8 h-8 text-xl bg-black ${review.img}`}>{review.icon}</div>
                     <div className="flex flex-col">
                       <figcaption className="text-sm font-medium text-white">{review.name}</figcaption>
                       <p className="text-xs font-medium text-neutral-400">{review.username}</p>
@@ -272,7 +261,7 @@ export default function LandingPage() {
               {secondRow.map((review) => (
                 <figure key={review.username} className="relative w-64 cursor-pointer overflow-hidden rounded-xl border border-white/10 bg-white/5 p-4 hover:bg-white/10">
                   <div className="flex flex-row items-center gap-2">
-                    <div className={`rounded-full w-8 h-8 ${review.img}`}></div>
+                    <div className={`flex items-center justify-center rounded-full w-8 h-8 text-xl bg-black ${review.img}`}>{review.icon}</div>
                     <div className="flex flex-col">
                       <figcaption className="text-sm font-medium text-white">{review.name}</figcaption>
                       <p className="text-xs font-medium text-neutral-400">{review.username}</p>

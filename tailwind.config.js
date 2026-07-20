@@ -27,6 +27,10 @@ module.exports = {
       animation: {
         "ping-slow": "ping 2s cubic-bezier(0, 0, 0.2, 1) infinite",
         "blob": "blob 7s infinite",
+        marquee: "marquee var(--duration) linear infinite",
+        "marquee-vertical": "marquee-vertical var(--duration) linear infinite",
+        "border": "border 4s linear infinite",
+        "beam-draw": "beam-draw var(--duration, 4s) linear infinite",
       },
       keyframes: {
         blob: {
@@ -35,6 +39,21 @@ module.exports = {
           "66%": { transform: "translate(-20px, 20px) scale(0.9)" },
           "100%": { transform: "translate(0px, 0px) scale(1)" },
         },
+        marquee: {
+          from: { transform: "translateX(0)" },
+          to: { transform: "translateX(calc(-100% - var(--gap)))" },
+        },
+        "marquee-vertical": {
+          from: { transform: "translateY(0)" },
+          to: { transform: "translateY(calc(-100% - var(--gap)))" },
+        },
+        border: {
+          to: { "--border-angle": "360deg" },
+        },
+        "beam-draw": {
+          "0%": { strokeDashoffset: "200%" },
+          "100%": { strokeDashoffset: "0%" },
+        }
       },
     },
   },
