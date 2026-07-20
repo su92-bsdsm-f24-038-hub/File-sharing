@@ -14,6 +14,7 @@ import { Sparkles } from "@/components/sparkles";
 import Earth from "@/components/globe";
 import { Marquee } from "@/components/ui/marquee";
 import { AnimatedBeam, Circle, Icons } from "@/components/ui/animated-beam";
+import { Logo } from "@/components/Logo";
 import Image from "next/image";
 
 const stagger = {
@@ -95,9 +96,9 @@ export default function LandingPage() {
           className="fixed top-6 left-0 right-0 mx-auto z-50 flex items-center gap-12 px-6 py-3 w-max bg-[#111111] rounded-full border border-white/5 shadow-2xl"
         >
           {/* Logo */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <Logo className="w-8 h-8" />
             <span className="text-2xl font-bold tracking-tight text-white">
-              <span className="text-primary-orange text-3xl leading-none">“</span>
               Sync<span className="text-primary-orange">.</span>
             </span>
           </div>
@@ -280,10 +281,12 @@ export default function LandingPage() {
         <footer className="relative z-10 border-t border-white/10 bg-[#09090B] pt-16 pb-8 px-6 mt-20">
           <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center md:items-start gap-8">
             <div className="flex flex-col items-center md:items-start gap-4">
-              <span className="text-2xl font-bold tracking-tight text-white">
-                <span className="text-primary-orange text-3xl leading-none">“</span>
-                Sync<span className="text-primary-orange">.</span>
-              </span>
+              <div className="flex items-center gap-3">
+                <Logo className="w-8 h-8" />
+                <span className="text-2xl font-bold tracking-tight text-white">
+                  Sync<span className="text-primary-orange">.</span>
+                </span>
+              </div>
               <p className="text-neutral-400 text-sm max-w-xs text-center md:text-left">
                 Secure, peer-to-peer file sharing directly from your browser. No limits, no cloud.
               </p>
