@@ -409,23 +409,25 @@ export default function DashboardPage() {
                     animate={{ opacity: 1, height: "auto" }}
                     className="w-full flex items-center gap-2 overflow-hidden"
                   >
-                    <div className="flex-1 flex gap-2">
-                      <Button
-                        variant="secondary"
-                        className="flex-1 h-10 rounded-xl bg-white/5 border border-primary-orange/20 hover:border-primary-orange/40 hover:bg-white/10 text-xs transition-colors"
-                        onClick={createRoom}
-                        disabled={isCreating}
-                      >
-                        <span className="truncate">Send to {lastDeviceState.deviceName} again</span>
-                      </Button>
-                      <button
-                        onClick={() => { clearLastDevice(); setLastDeviceState(null); }}
-                        className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20 text-neutral-500 transition-colors shrink-0"
-                        title="Forget device"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                    <ProLock featureName="Send to Last Device">
+                      <div className="flex-1 flex gap-2">
+                        <Button
+                          variant="secondary"
+                          className="flex-1 h-10 rounded-xl bg-white/5 border border-primary-orange/20 hover:border-primary-orange/40 hover:bg-white/10 text-xs transition-colors"
+                          onClick={createRoom}
+                          disabled={isCreating}
+                        >
+                          <span className="truncate">Send to {lastDeviceState.deviceName} again</span>
+                        </Button>
+                        <button
+                          onClick={() => { clearLastDevice(); setLastDeviceState(null); }}
+                          className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20 text-neutral-500 transition-colors shrink-0"
+                          title="Forget device"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </ProLock>
                   </motion.div>
                 )}
               </div>
