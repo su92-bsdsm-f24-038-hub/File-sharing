@@ -98,9 +98,6 @@ export default function LandingPage() {
           {/* Logo */}
           <div className="flex items-center gap-3">
             <Logo className="w-14 h-14" />
-            <span className="text-2xl font-bold tracking-tight text-white">
-              Sync<span className="text-primary-orange">.</span>
-            </span>
           </div>
 
           {/* Links (Center) */}
@@ -283,9 +280,6 @@ export default function LandingPage() {
             <div className="flex flex-col items-center md:items-start gap-4">
               <div className="flex items-center gap-3">
                 <Logo className="w-24 h-24 -ml-2" />
-                <span className="text-2xl font-bold tracking-tight text-white">
-                  Sync<span className="text-primary-orange">.</span>
-                </span>
               </div>
               <p className="text-neutral-400 text-sm max-w-xs text-center md:text-left">
                 Secure, peer-to-peer file sharing directly from your browser. No limits, no cloud.
