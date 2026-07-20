@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { Lock, ArrowRight, Star } from "lucide-react";
+import { Lock, Star } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
+import { useUpgrade } from "@/hooks/useUpgrade";
+import { UpgradeModal } from "@/components/UpgradeModal";
 
 interface ProLockProps {
   children: React.ReactNode;
@@ -15,7 +16,7 @@ interface ProLockProps {
 export function ProLock({ children, featureName }: ProLockProps) {
   const { isPro } = useAuth();
   const [showModal, setShowModal] = useState(false);
-  const router = useRouter();
+  const { handleUpgrade, modalOpen, popupBlocked, closeModal } = useUpgrade();
 
   if (isPro) {
     return <>{children}</>;
@@ -23,7 +24,7 @@ export function ProLock({ children, featureName }: ProLockProps) {
 
   return (
     <>
-      <div 
+      <div
         className="relative group cursor-pointer inline-block"
         onClick={(e) => {
           e.preventDefault();
@@ -49,7 +50,7 @@ export function ProLock({ children, featureName }: ProLockProps) {
               className="w-full max-w-sm bg-[#111217] border border-primary-orange/30 rounded-[24px] p-6 shadow-2xl relative overflow-hidden"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-primary-orange/10 to-transparent pointer-events-none" />
-              
+
               <div className="relative z-10 flex flex-col items-center text-center">
                 <div className="w-12 h-12 rounded-full bg-primary-orange/20 flex items-center justify-center mb-4 text-primary-orange">
                   <Star className="w-6 h-6 fill-primary-orange" />
@@ -58,7 +59,7 @@ export function ProLock({ children, featureName }: ProLockProps) {
                 <p className="text-sm text-neutral-400 mb-6">
                   {featureName} is available exclusively on the Sync Pro plan.
                 </p>
-                
+
                 <div className="flex w-full gap-3">
                   <Button
                     variant="secondary"
@@ -69,7 +70,10 @@ export function ProLock({ children, featureName }: ProLockProps) {
                   </Button>
                   <Button
                     className="flex-1 bg-gradient-to-r from-primary-orange to-glow-orange border-0 text-white"
-                    onClick={() => router.push("/pricing")}
+                    onClick={() => {
+                      setShowModal(false);
+                      handleUpgrade();
+                    }}
                   >
                     Upgrade
                   </Button>
@@ -79,6 +83,8 @@ export function ProLock({ children, featureName }: ProLockProps) {
           </div>
         )}
       </AnimatePresence>
+
+      <UpgradeModal isOpen={modalOpen} onClose={closeModal} popupBlocked={popupBlocked} />
     </>
   );
 }

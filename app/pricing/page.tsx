@@ -1,42 +1,26 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Check, X, ArrowRight, Star } from "lucide-react";
+import { Check, X, Star } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Logo } from "@/components/Logo";
 import { useAuth } from "@/context/AuthContext";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useUpgrade } from "@/hooks/useUpgrade";
+import { UpgradeModal } from "@/components/UpgradeModal";
 
 export default function PricingPage() {
   const { user, isPro } = useAuth();
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { handleUpgrade, modalOpen, popupBlocked, closeModal } = useUpgrade();
 
-  const handleUpgrade = async () => {
+  const onUpgradeClick = () => {
     if (!user) {
       router.push("/login?redirect=/pricing");
       return;
     }
-
-    try {
-      setLoading(true);
-      const res = await fetch("/api/create-checkout-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uid: user.uid }),
-      });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error(data.error || "Failed to create checkout session");
-      }
-    } catch (e) {
-      console.error(e);
-      setLoading(false);
-    }
+    handleUpgrade();
   };
 
   return (
@@ -79,7 +63,7 @@ export default function PricingPage() {
               <div className="h-px bg-white/10 my-2" />
               
               <FeatureItem included={false}>Draw-on-image markup</FeatureItem>
-              <FeatureItem included={false}>"Send to Last Device"</FeatureItem>
+              <FeatureItem included={false}>&quot;Send to Last Device&quot;</FeatureItem>
               <FeatureItem included={false}>Transfer reactions</FeatureItem>
               <FeatureItem included={false}>Session accent themes</FeatureItem>
               <FeatureItem included={false}>Video/ZIP inline preview</FeatureItem>
@@ -118,7 +102,7 @@ export default function PricingPage() {
               <div className="h-px bg-white/10 my-2" />
               
               <FeatureItem included>Draw-on-image markup tool</FeatureItem>
-              <FeatureItem included>"Send to Last Device"</FeatureItem>
+              <FeatureItem included>&quot;Send to Last Device&quot;</FeatureItem>
               <FeatureItem included>Transfer reactions (all emojis)</FeatureItem>
               <FeatureItem included>Session accent themes</FeatureItem>
               <FeatureItem included>Video/ZIP inline preview</FeatureItem>
@@ -127,8 +111,7 @@ export default function PricingPage() {
 
             <Button
               className="w-full h-12 rounded-xl bg-gradient-to-r from-primary-orange to-glow-orange shadow-[0_0_20px_rgba(255,122,26,0.3)] hover:shadow-[0_0_30px_rgba(255,122,26,0.5)] border-0 text-white"
-              onClick={handleUpgrade}
-              loading={loading}
+              onClick={onUpgradeClick}
               disabled={isPro}
             >
               {isPro ? "Pro Active" : "Upgrade to Pro"}
@@ -136,6 +119,8 @@ export default function PricingPage() {
           </div>
         </div>
       </motion.div>
+
+      <UpgradeModal isOpen={modalOpen} onClose={closeModal} popupBlocked={popupBlocked} />
     </div>
   );
 }
