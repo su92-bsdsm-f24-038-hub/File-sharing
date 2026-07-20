@@ -97,7 +97,7 @@ export default function LandingPage() {
         >
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <Logo className="w-8 h-8" />
+            <Logo className="w-14 h-14" />
             <span className="text-2xl font-bold tracking-tight text-white">
               Sync<span className="text-primary-orange">.</span>
             </span>
@@ -282,7 +282,7 @@ export default function LandingPage() {
           <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center md:items-start gap-8">
             <div className="flex flex-col items-center md:items-start gap-4">
               <div className="flex items-center gap-3">
-                <Logo className="w-8 h-8" />
+                <Logo className="w-24 h-24 -ml-2" />
                 <span className="text-2xl font-bold tracking-tight text-white">
                   Sync<span className="text-primary-orange">.</span>
                 </span>
