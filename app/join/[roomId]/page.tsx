@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zap, KeyRound, AlertCircle, Wifi, WifiOff } from "lucide-react";
+import { Logo } from "@/components/Logo";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -129,10 +130,7 @@ function JoinPageInner() {
 
       {/* Header */}
       <header className="relative z-10 px-5 py-4 flex items-center gap-2 border-b border-white/5 bg-white/[0.01] backdrop-blur-md">
-        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary-start to-primary-end flex items-center justify-center glow-primary">
-          <Zap className="w-3.5 h-3.5 text-white" />
-        </div>
-        <span className="font-bold text-sm tracking-tight text-white">Sync</span>
+        <Logo className="w-8 h-8" />
         <div className="ml-auto">
           <ConnectionStatus status={status} />
         </div>

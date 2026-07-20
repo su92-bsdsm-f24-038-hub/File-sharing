@@ -7,6 +7,7 @@ import {
   Zap, LogOut, RefreshCw, Copy, Check, QrCode,
   Shield, User as UserIcon,
 } from "lucide-react";
+import { Logo } from "@/components/Logo";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { getSocket } from "@/lib/socket";
@@ -180,10 +181,7 @@ export default function DashboardPage() {
       <header className="relative z-10 border-b border-white/5 px-6 py-4 bg-[#09090B]/50 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-orange to-glow-orange flex items-center justify-center shadow-[0_0_15px_rgba(255,122,26,0.3)]">
-              <Zap className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold tracking-tight text-white">Sync</span>
+            <Logo className="w-10 h-10" />
           </Link>
           <div className="flex items-center gap-4">
             <button 

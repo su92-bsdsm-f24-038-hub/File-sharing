@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion } from "framer-motion";
 import { Mail, Lock, User, Eye, EyeOff, Zap } from "lucide-react";
+import { Logo } from "@/components/Logo";
 import { useAuth } from "@/context/AuthContext";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
@@ -98,10 +99,7 @@ export default function SignupPage() {
       >
         <div className="flex flex-col items-center mb-8">
           <Link href="/" className="flex items-center gap-2 mb-6">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-orange to-glow-orange flex items-center justify-center shadow-[0_0_20px_rgba(255,122,26,0.4)]">
-              <Zap className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-bold text-xl tracking-tight text-white">Sync</span>
+            <Logo className="w-14 h-14" />
           </Link>
           <h1 className="text-2xl font-bold">Create your account</h1>
           <p className="text-sm text-neutral-400 mt-1">Free forever. No credit card.</p>
