@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Zap, Shield, ArrowRight, Lock } from "lucide-react";
+import { Zap, Shield, ArrowRight, Lock, Phone } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { MagneticButton } from "@/components/ui/MagneticButton";
@@ -92,28 +92,32 @@ export default function LandingPage() {
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="sticky top-0 z-40 flex items-center justify-between px-6 py-5 max-w-7xl mx-auto backdrop-blur-xl border-b border-white/5 bg-[#09090B]/50 rounded-b-3xl"
+          className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between px-6 py-3 w-[90%] max-w-5xl bg-[#111111] rounded-full border border-white/5 shadow-2xl"
         >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary-orange to-glow-orange rounded-xl flex items-center justify-center shadow-lg shadow-primary-orange/20">
-              <Zap className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-xl font-bold tracking-tight text-white relative">
-              Sync
-              <span className="absolute -bottom-1 left-0 w-full h-[2px] bg-gradient-to-r from-primary-orange to-glow-orange rounded-full"></span>
+          {/* Logo */}
+          <div className="flex items-center gap-2">
+            <span className="text-2xl font-bold tracking-tight text-white">
+              <span className="text-primary-orange text-3xl leading-none">“</span>
+              Sync<span className="text-primary-orange">.</span>
             </span>
           </div>
-          <div className="flex items-center gap-3">
-            <Link href="/join">
-              <Button variant="ghost" size="sm" className="text-primary-orange hover:text-glow-orange hover:bg-white/5">Enter Code</Button>
-            </Link>
-            <Link href="/login">
-              <Button variant="ghost" size="sm" className="hover:bg-white/5">Sign In</Button>
-            </Link>
+
+          {/* Links */}
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-neutral-300">
+            <Link href="#home" className="text-white font-semibold transition-colors">Home</Link>
+            <Link href="#problem" className="hover:text-white transition-colors">Problem</Link>
+            <Link href="#solution" className="hover:text-white transition-colors">Solution</Link>
+            <Link href="#pricing" className="hover:text-white transition-colors">Pricing</Link>
+            <Link href="#contact" className="hover:text-white transition-colors">Contact</Link>
+          </div>
+
+          {/* CTA */}
+          <div>
             <Link href="/signup">
-              <MagneticButton intensity={0.1}>
-                <Button size="sm" className="bg-primary-orange hover:bg-glow-orange text-white shadow-[0_0_15px_rgba(255,122,26,0.4)] border-0">Get Started</Button>
-              </MagneticButton>
+              <Button size="sm" className="bg-white hover:bg-neutral-200 text-black rounded-full px-5 py-5 font-bold shadow-md flex items-center gap-2">
+                <Phone className="w-4 h-4" />
+                Let's Talk
+              </Button>
             </Link>
           </div>
         </motion.nav>
