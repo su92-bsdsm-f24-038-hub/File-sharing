@@ -536,53 +536,7 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
           maxCount={5}
         />
       </div>
-        <div className="flex flex-wrap gap-2">
-          <motion.button
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={() => setTargetId("all")}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm transition-colors ${
-              targetId === "all"
-                ? "bg-primary-start/20 border-primary-start/50 text-white"
-                : "bg-white/[0.03] border-white/10 text-neutral-400 hover:bg-white/[0.06]"
-            }`}
-          >
-            <div className="w-2 h-2 rounded-full bg-emerald-accent animate-pulse" />
-            Send to All
-          </motion.button>
 
-          <AnimatePresence>
-            {connectedDevices.filter((d) => d.socketId !== socketId).map((device) => {
-              const isSelected = targetId === device.socketId;
-              const Icon = device.deviceType === "mobile" ? Smartphone : device.deviceType === "tablet" ? Tablet : Monitor;
-
-              return (
-                <motion.button
-                  key={device.socketId}
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.8, opacity: 0 }}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                  onClick={() => setTargetId(device.socketId)}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm transition-colors ${
-                    isSelected
-                      ? "bg-primary-start/20 border-primary-start/50 text-white"
-                      : "bg-white/[0.03] border-white/10 text-neutral-400 hover:bg-white/[0.06]"
-                  }`}
-                >
-                  <div className="w-2 h-2 rounded-full bg-emerald-accent animate-pulse" />
-                  <Icon className="w-3.5 h-3.5" />
-                  <span className="max-w-24 truncate">{device.deviceName}</span>
-                </motion.button>
-              );
-            })}
-          </AnimatePresence>
-        </div>
-      </div>
 
       {/* Messages */}
       <div className="flex-1 px-4 py-4 p-[2px] w-full max-w-full relative min-h-0 [background:linear-gradient(45deg,#080b11,rgba(255,122,26,0.1)_50%,#172033)_padding-box,conic-gradient(from_var(--border-angle),rgba(255,122,26,0.3)_80%,#FF7A1A_86%,#FF9A3D_90%,#FF7A1A_94%,rgba(255,122,26,0.3))_border-box] border-transparent border-t-2 border-b-2 overflow-hidden flex flex-col">
