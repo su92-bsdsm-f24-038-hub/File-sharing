@@ -120,10 +120,8 @@ export default function LandingPage() {
 
         {/* Hero */}
         <section ref={heroRef} className="relative z-10 pt-20 pb-20 px-6 w-full text-center">
-          {/* Sparkles Title Effect */}
-          <div className="absolute inset-0 w-full h-[600px] overflow-hidden mask-[radial-gradient(50%_50%,white,transparent)] before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_bottom_center,#FF7A1A,transparent_90%)] before:opacity-30">
-            <Sparkles density={400} size={1.4} direction="top" color="#FF7A1A" className="absolute inset-x-0 top-0 h-full w-full mask-[radial-gradient(50%_50%,white,transparent_85%)]" />
-          </div>
+          {/* Simple Gradient Glow */}
+          <div className="absolute inset-0 w-full h-[600px] bg-[radial-gradient(ellipse_at_top,#FF7A1A30,transparent_60%)] pointer-events-none"></div>
 
           <motion.div
             variants={stagger}
