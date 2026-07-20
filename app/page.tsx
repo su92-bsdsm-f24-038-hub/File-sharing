@@ -92,7 +92,7 @@ export default function LandingPage() {
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed top-6 left-0 right-0 mx-auto z-50 flex items-center justify-between px-6 py-3 w-[90%] max-w-5xl bg-[#111111] rounded-full border border-white/5 shadow-2xl"
+          className="fixed top-6 left-0 right-0 mx-auto z-50 flex items-center gap-12 px-6 py-3 w-max bg-[#111111] rounded-full border border-white/5 shadow-2xl"
         >
           {/* Logo */}
           <div className="flex items-center gap-2">
