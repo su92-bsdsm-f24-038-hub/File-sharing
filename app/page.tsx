@@ -276,22 +276,47 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* CTA */}
-        <section className="relative z-10 py-32 px-6 max-w-4xl mx-auto text-center">
-          <GlassCard className="p-20" glow glowColor="primary">
-            <h2 className="text-5xl font-extrabold mb-6 tracking-tight">Ready to <span className="text-primary-orange">Sync?</span></h2>
-            <p className="text-neutral-400 text-lg mb-10 max-w-xl mx-auto">
-              Create a free account, generate your first room, and share something in under 30 seconds.
+        {/* Footer */}
+        <footer className="relative z-10 border-t border-white/10 bg-[#09090B] pt-16 pb-8 px-6 mt-20">
+          <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center md:items-start gap-8">
+            <div className="flex flex-col items-center md:items-start gap-4">
+              <span className="text-2xl font-bold tracking-tight text-white">
+                <span className="text-primary-orange text-3xl leading-none">“</span>
+                Sync<span className="text-primary-orange">.</span>
+              </span>
+              <p className="text-neutral-400 text-sm max-w-xs text-center md:text-left">
+                Secure, peer-to-peer file sharing directly from your browser. No limits, no cloud.
+              </p>
+            </div>
+
+            <div className="flex flex-col md:flex-row gap-12 md:gap-24 text-center md:text-left">
+              <div className="flex flex-col gap-3">
+                <h4 className="text-white font-semibold mb-2">Product</h4>
+                <Link href="/join" className="text-neutral-400 hover:text-white transition-colors text-sm">Enter Code</Link>
+                <Link href="/login" className="text-neutral-400 hover:text-white transition-colors text-sm">Sign In</Link>
+                <Link href="/signup" className="text-neutral-400 hover:text-white transition-colors text-sm">Get Started</Link>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <h4 className="text-white font-semibold mb-2">Legal</h4>
+                <Link href="/privacy" className="text-neutral-400 hover:text-white transition-colors text-sm">Privacy Policy</Link>
+                <Link href="/terms" className="text-neutral-400 hover:text-white transition-colors text-sm">Terms of Service</Link>
+                <Link href="/contact" className="text-neutral-400 hover:text-white transition-colors text-sm">Contact Us</Link>
+              </div>
+            </div>
+          </div>
+          
+          <div className="max-w-6xl mx-auto mt-16 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-neutral-500 text-xs">
+              © {new Date().getFullYear()} Sync. All rights reserved.
             </p>
-            <Link href="/signup">
-              <MagneticButton intensity={0.2}>
-                <Button size="lg" className="bg-primary-orange hover:bg-glow-orange border-0 shadow-[0_0_40px_rgba(255,122,26,0.4)] text-white h-16 px-10 text-lg rounded-2xl" icon={<ArrowRight className="w-6 h-6" />}>
-                  Create Free Account
-                </Button>
-              </MagneticButton>
-            </Link>
-          </GlassCard>
-        </section>
+            <div className="flex items-center gap-6">
+              <a href="https://github.com/su92-bsdsm-f24-038-hub/File-sharing" target="_blank" rel="noreferrer" className="text-neutral-500 hover:text-neutral-300 text-xs transition-colors">
+                GitHub Repository
+              </a>
+            </div>
+          </div>
+        </footer>
       </AnimatePresence>
     </div>
   );
