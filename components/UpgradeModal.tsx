@@ -29,7 +29,7 @@ export function UpgradeModal({ isOpen, onClose, popupBlocked }: UpgradeModalProp
     setError(null);
     setLoading(true);
     try {
-      const token = await user.getIdToken();
+      const token = await user.getIdToken(true); // force refresh
       const res = await fetch("/api/verify-license", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
