@@ -55,11 +55,11 @@ export async function POST(req: NextRequest) {
   }
 
   // Step 3: Verify with Gumroad
-  console.log("[verify-license] calling gumroad with product_permalink:", GUMROAD_PRODUCT_ID);
+  console.log("[verify-license] calling gumroad with product_id:", GUMROAD_PRODUCT_ID);
   let gumroadData: any;
   try {
     const params = new URLSearchParams({
-      product_permalink: GUMROAD_PRODUCT_ID,
+      product_id: GUMROAD_PRODUCT_ID,
       license_key: licenseKey.trim(),
       increment_uses_count: "false",
     });
