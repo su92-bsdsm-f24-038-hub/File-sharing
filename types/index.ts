@@ -96,7 +96,7 @@ export interface ServerToClientEvents {
 
 export interface ClientToServerEvents {
   "room:create": (
-    data: { userId: string; deviceName: string; deviceType: DeviceType },
+    data: { token: string; deviceName: string; deviceType: DeviceType },
     callback: (res: { success: boolean; roomId?: string; pin?: string; error?: string }) => void
   ) => void;
   "room:join": (
