@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/lib/utils";
 import { CSSProperties, ReactNode, forwardRef, MouseEvent, useState } from "react";
 import { motion, HTMLMotionProps, useSpring, useTransform, useMotionValue } from "framer-motion";
