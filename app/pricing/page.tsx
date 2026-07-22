@@ -73,7 +73,7 @@ export default function PricingPage() {
             <Button
               variant="secondary"
               className="w-full h-12 rounded-xl bg-white/5 text-neutral-300"
-              disabled={user && !isPro}
+              disabled={Boolean(user && !isPro)}
               onClick={() => router.push(user ? "/dashboard" : "/signup")}
             >
               {user && !isPro ? "Current Plan" : "Get Started for Free"}
