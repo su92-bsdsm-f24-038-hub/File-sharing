@@ -212,7 +212,7 @@ export default function DashboardPage() {
 
   if (!user) return null;
 
-  const roomTheme = getThemeVariantConfig(getThemeForRoom(roomId));
+  const roomTheme = getThemeVariantConfig(getThemeForRoom(roomId || ""));
 
   return (
     <div 
