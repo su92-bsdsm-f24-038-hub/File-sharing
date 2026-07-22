@@ -767,7 +767,7 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
           />
           <FileUploader
             value={pendingFiles}
-            onValueChange={(files) => {
+            onValueChange={(files: File[] | null) => {
               if (!files) return;
               const hasRestricted = !isPro && files.some(f => f.type.startsWith("video/") || f.name.endsWith(".zip") || f.type.includes("zip"));
               if (hasRestricted) {
