@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { adminAuth } from "@/lib/firebase-admin";
+import { getAdminAuth } from "@/lib/firebase-admin";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-12-18.acacia",
+  apiVersion: "2023-10-16",
 });
 
 export async function POST(req: Request) {
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
         const uid = session.client_reference_id;
         
         if (uid) {
-          await adminAuth.setCustomUserClaims(uid, { plan: "pro" });
+          await getAdminAuth().setCustomUserClaims(uid, { plan: "pro" });
           console.log(`Upgraded user ${uid} to pro.`);
         }
         break;
@@ -58,7 +58,7 @@ export async function POST(req: Request) {
         // We will check metadata.uid.
         const uid = subscription.metadata.uid;
         if (uid && subscription.status === "canceled") {
-           await adminAuth.setCustomUserClaims(uid, { plan: "free" });
+           await getAdminAuth().setCustomUserClaims(uid, { plan: "free" });
            console.log(`Downgraded user ${uid} to free.`);
         }
         break;
