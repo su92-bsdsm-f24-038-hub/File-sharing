@@ -30,6 +30,8 @@ const GoogleIcon = () => (
   </svg>
 );
 
+import { DashboardSkeleton } from "@/components/DashboardSkeleton";
+
 export default function LoginPage() {
   const { signIn, signInWithGoogle } = useAuth();
   const router = useRouter();
@@ -41,9 +43,7 @@ export default function LoginPage() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<FormData>({
-    resolver: zodResolver(schema),
-  });
+  } = useForm<FormData>({ resolver: zodResolver(schema) });
 
   const onSubmit = async (data: FormData) => {
     setAuthError(null);
@@ -51,13 +51,11 @@ export default function LoginPage() {
       await signIn(data.email, data.password);
       router.push("/dashboard");
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Login failed";
+      const msg = err instanceof Error ? err.message : "";
       setAuthError(
-        msg.includes("invalid-credential") || msg.includes("wrong-password")
+        msg.includes("invalid-credential") || msg.includes("user-not-found")
           ? "Invalid email or password."
-          : msg.includes("too-many-requests")
-          ? "Too many attempts. Try again later."
-          : `Login failed: ${msg || "Unknown error"}`
+          : "Failed to sign in. Please try again."
       );
     }
   };
@@ -71,10 +69,13 @@ export default function LoginPage() {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Unknown error";
       setAuthError(`Google sign-in failed: ${msg}`);
-    } finally {
-      setGoogleLoading(false);
+      setGoogleLoading(false); // Only reset on error
     }
   };
+
+  if (googleLoading || isSubmitting) {
+    return <DashboardSkeleton />;
+  }
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">

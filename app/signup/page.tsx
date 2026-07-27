@@ -41,6 +41,8 @@ const GoogleIcon = () => (
   </svg>
 );
 
+import { DashboardSkeleton } from "@/components/DashboardSkeleton";
+
 export default function SignupPage() {
   const { signUp, signInWithGoogle } = useAuth();
   const router = useRouter();
@@ -79,10 +81,13 @@ export default function SignupPage() {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Unknown error";
       setAuthError(`Google sign-up failed: ${msg}`);
-    } finally {
-      setGoogleLoading(false);
+      setGoogleLoading(false); // Only reset on error
     }
   };
+
+  if (googleLoading || isSubmitting) {
+    return <DashboardSkeleton />;
+  }
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
