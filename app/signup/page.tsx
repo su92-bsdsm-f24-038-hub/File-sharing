@@ -107,7 +107,6 @@ export default function SignupPage() {
         </div>
 
         <GlassCard className="p-8" glow glowColor="primary">
-        <GlassCard className="p-8" glow glowColor="primary">
           {googleLoading || isSubmitting ? (
             <div className="py-8">
               <LoadingSkeleton lines={5} />
