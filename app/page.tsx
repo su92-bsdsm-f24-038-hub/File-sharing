@@ -103,6 +103,7 @@ export default function LandingPage() {
           {/* Links (Center) */}
           <div className="hidden md:flex items-center gap-6 text-sm font-medium text-neutral-400">
             <Link href="/pricing" className="hover:text-white transition-colors flex items-center gap-1">Pricing</Link>
+            <Link href="/join" className="hover:text-white transition-colors flex items-center gap-1">Enter Code</Link>
             <Link href="/login" className="hover:text-white transition-colors">Sign In</Link>
             <Link href="/dashboard" className="px-5 py-2.5 rounded-full bg-white text-black hover:bg-neutral-200 transition-colors">
               Go to App
