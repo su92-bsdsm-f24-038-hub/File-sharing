@@ -246,6 +246,38 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
     }, () => {});
   }, [socket, roomId, deviceName, messages]);
 
+  // ─── Listen for deletion ──────────────────────────────────────────────────
+  useEffect(() => {
+    const handleDelete = (data: { messageId: string }) => {
+      setMessages((prev) =>
+        prev.filter((m) => {
+          const id = "id" in m ? m.id : m.transferId;
+          return id !== data.messageId;
+        })
+      );
+    };
+
+    socket.on("transfer:delete_received", handleDelete);
+    return () => { socket.off("transfer:delete_received", handleDelete); };
+  }, [socket]);
+
+  // ─── Delete Message: send + local state ──────────────────────────────────
+  const handleDeleteMessage = useCallback((messageId: string) => {
+    // Optimistically remove from local state immediately
+    setMessages((prev) =>
+      prev.filter((m) => {
+        const id = "id" in m ? m.id : m.transferId;
+        return id !== messageId;
+      })
+    );
+
+    // Send to the room
+    socket.emit("transfer:delete", {
+      roomId,
+      messageId,
+    }, () => {});
+  }, [socket, roomId]);
+
   // ─── Voice Note: Start Recording ──────────────────────────────────────────
   const startRecording = useCallback(async () => {
     setMicError(null);
@@ -598,8 +630,8 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
                 className="w-full"
               >
                 {"text" in msg 
-                  ? <TextMessageBubble message={msg} onReact={handleReact} />
-                  : <FileMessageCard file={msg as FileProgress} onReact={handleReact} onCancel={handleCancelTransfer} />
+                  ? <TextMessageBubble message={msg} onReact={handleReact} onDelete={handleDeleteMessage} />
+                  : <FileMessageCard file={msg as FileProgress} onReact={handleReact} onCancel={handleCancelTransfer} onDelete={handleDeleteMessage} />
                 }
               </motion.div>
             );

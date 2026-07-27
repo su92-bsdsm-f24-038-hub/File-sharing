@@ -92,6 +92,7 @@ export interface ServerToClientEvents {
   }) => void;
   "transfer:file_complete_ack": (data: { transferId: string }) => void;
   "transfer:reaction_received": (data: { messageId: string; emoji: string; deviceName: string }) => void;
+  "transfer:delete_received": (data: { messageId: string }) => void;
 }
 
 export interface ClientToServerEvents {
@@ -131,6 +132,10 @@ export interface ClientToServerEvents {
   ) => void;
   "transfer:react": (
     data: { roomId: string; targetId?: string; messageId: string; emoji: string; deviceName: string },
+    callback: (res: { success: boolean; error?: string }) => void
+  ) => void;
+  "transfer:delete": (
+    data: { roomId: string; targetId?: string; messageId: string },
     callback: (res: { success: boolean; error?: string }) => void
   ) => void;
 }

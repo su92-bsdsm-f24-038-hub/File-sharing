@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Copy, Clock, Smile } from "lucide-react";
+import { Check, Copy, Clock, Smile, Trash2 } from "lucide-react";
 import { TextMessage as TMsg } from "@/types";
 import { useState } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -11,9 +11,10 @@ import { ProLock } from "@/components/ProLock";
 interface TextMessageProps {
   message: TMsg;
   onReact: (messageId: string, emoji: string) => void;
+  onDelete?: (messageId: string) => void;
 }
 
-export function TextMessageBubble({ message, onReact }: TextMessageProps) {
+export function TextMessageBubble({ message, onReact, onDelete }: TextMessageProps) {
   const [copied, setCopied] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
 
@@ -114,6 +115,15 @@ export function TextMessageBubble({ message, onReact }: TextMessageProps) {
               )}
             </AnimatePresence>
           </div>
+          {message.isSelf && onDelete && (
+            <button
+              onClick={() => onDelete(message.id)}
+              className="text-[10px] text-neutral-500 hover:text-red-400 transition-colors flex items-center justify-center w-5 h-5 rounded hover:bg-white/5 ml-1"
+              title="Delete message"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </div>
     </motion.div>

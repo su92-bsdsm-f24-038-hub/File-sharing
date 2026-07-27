@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, File, Image as ImageIcon, Music, Video, Archive, Smile, Mic, X, CheckCircle2, Play, Pause, Loader2 } from "lucide-react";
+import { Download, File, Image as ImageIcon, Music, Video, Archive, Smile, Mic, X, CheckCircle2, Play, Pause, Loader2, Trash2 } from "lucide-react";
 import { FileProgress } from "@/types";
 import { formatBytes } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/ProgressBar";
@@ -13,6 +13,7 @@ interface FileMessageProps {
   file: FileProgress;
   onReact: (messageId: string, emoji: string) => void;
   onCancel?: (transferId: string) => void;
+  onDelete?: (transferId: string) => void;
 }
 
 function getFileIcon(fileType: string) {
@@ -28,7 +29,7 @@ function getFileExtension(fileName: string) {
   return parts.length > 1 ? parts[parts.length - 1].toUpperCase() : "FILE";
 }
 
-export function FileMessageCard({ file, onReact, onCancel }: FileMessageProps) {
+export function FileMessageCard({ file, onReact, onCancel, onDelete }: FileMessageProps) {
   const [showPicker, setShowPicker] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -164,6 +165,11 @@ export function FileMessageCard({ file, onReact, onCancel }: FileMessageProps) {
                 )}
               </AnimatePresence>
             </div>
+            {file.isSelf && onDelete && (
+              <button onClick={() => onDelete(file.transferId)} className="text-neutral-500 hover:text-red-400 p-1 rounded ml-1" title="Delete message">
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
       </motion.div>
@@ -296,6 +302,11 @@ export function FileMessageCard({ file, onReact, onCancel }: FileMessageProps) {
               )}
             </AnimatePresence>
           </div>
+          {file.isSelf && onDelete && (
+            <button onClick={() => onDelete(file.transferId)} className="text-neutral-500 hover:text-red-400 p-1 rounded ml-1" title="Delete message">
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
     </motion.div>

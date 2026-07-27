@@ -490,6 +490,33 @@ io.on("connection", (socket: Socket) => {
     }
   );
 
+  // ── Transfer: Delete ─────────────────────────────────────────────────────
+
+  socket.on(
+    "transfer:delete",
+    (
+      { roomId, targetId, messageId }: { roomId: string; targetId?: string; messageId: string },
+      callback: (res: { success: boolean; error?: string }) => void
+    ) => {
+      const room = rooms.get(roomId);
+      if (!room || !room.devices.has(socket.id)) {
+        return callback({ success: false, error: "not_in_room" });
+      }
+
+      resetRoomExpiry(room);
+
+      const payload = { messageId };
+
+      if (targetId && targetId !== "all") {
+        socket.to(targetId).emit("transfer:delete_received", payload);
+      } else {
+        socket.to(roomId).emit("transfer:delete_received", payload);
+      }
+
+      callback({ success: true });
+    }
+  );
+
   // ── Disconnect ────────────────────────────────────────────────────────────
 
   socket.on("disconnect", () => {
