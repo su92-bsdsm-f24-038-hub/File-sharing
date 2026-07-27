@@ -38,6 +38,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [showSkeleton, setShowSkeleton] = useState(false);
 
   const {
     register,
@@ -65,15 +66,16 @@ export default function LoginPage() {
     setGoogleLoading(true);
     try {
       await signInWithGoogle();
+      setShowSkeleton(true);
       router.push("/dashboard");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Unknown error";
       setAuthError(`Google sign-in failed: ${msg}`);
-      setGoogleLoading(false); // Only reset on error
+      setGoogleLoading(false);
     }
   };
 
-  if (googleLoading || isSubmitting) {
+  if (showSkeleton || isSubmitting) {
     return <DashboardSkeleton />;
   }
 

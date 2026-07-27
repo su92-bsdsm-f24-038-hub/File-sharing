@@ -50,6 +50,7 @@ export default function SignupPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [showSkeleton, setShowSkeleton] = useState(false);
 
   const {
     register,
@@ -77,15 +78,16 @@ export default function SignupPage() {
     setGoogleLoading(true);
     try {
       await signInWithGoogle();
+      setShowSkeleton(true);
       router.push("/dashboard");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Unknown error";
       setAuthError(`Google sign-up failed: ${msg}`);
-      setGoogleLoading(false); // Only reset on error
+      setGoogleLoading(false);
     }
   };
 
-  if (googleLoading || isSubmitting) {
+  if (showSkeleton || isSubmitting) {
     return <DashboardSkeleton />;
   }
 
