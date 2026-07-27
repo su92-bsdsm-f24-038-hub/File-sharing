@@ -262,7 +262,7 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
   }, [socket]);
 
   // ─── Delete Message: send + local state ──────────────────────────────────
-  const handleDeleteMessage = useCallback((messageId: string) => {
+  const handleDeleteMessage = useCallback((messageId: string, forEveryone: boolean) => {
     // Optimistically remove from local state immediately
     setMessages((prev) =>
       prev.filter((m) => {
@@ -271,11 +271,13 @@ export function TransferPanel({ socket, roomId, socketId }: TransferPanelProps) 
       })
     );
 
-    // Send to the room
-    socket.emit("transfer:delete", {
-      roomId,
-      messageId,
-    }, () => {});
+    // Send to the room only if 'forEveryone' is true
+    if (forEveryone) {
+      socket.emit("transfer:delete", {
+        roomId,
+        messageId,
+      }, () => {});
+    }
   }, [socket, roomId]);
 
   // ─── Voice Note: Start Recording ──────────────────────────────────────────

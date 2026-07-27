@@ -11,12 +11,13 @@ import { ProLock } from "@/components/ProLock";
 interface TextMessageProps {
   message: TMsg;
   onReact: (messageId: string, emoji: string) => void;
-  onDelete?: (messageId: string) => void;
+  onDelete?: (messageId: string, forEveryone: boolean) => void;
 }
 
 export function TextMessageBubble({ message, onReact, onDelete }: TextMessageProps) {
   const [copied, setCopied] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
+  const [showDeletePicker, setShowDeletePicker] = useState(false);
 
   const groupedReactions = message.reactions?.reduce((acc, r) => {
     acc[r.emoji] = (acc[r.emoji] || 0) + 1;
@@ -97,7 +98,7 @@ export function TextMessageBubble({ message, onReact, onDelete }: TextMessagePro
           <div className="relative">
             <ProLock featureName="Transfer Reactions">
               <button
-                onClick={() => setShowPicker(!showPicker)}
+                onClick={() => { setShowPicker(!showPicker); setShowDeletePicker(false); }}
                 className="text-[10px] text-neutral-500 hover:text-primary-start transition-colors flex items-center justify-center w-5 h-5 rounded hover:bg-white/5"
                 title="React"
               >
@@ -116,13 +117,38 @@ export function TextMessageBubble({ message, onReact, onDelete }: TextMessagePro
             </AnimatePresence>
           </div>
           {message.isSelf && onDelete && (
-            <button
-              onClick={() => onDelete(message.id)}
-              className="text-[10px] text-neutral-500 hover:text-red-400 transition-colors flex items-center justify-center w-5 h-5 rounded hover:bg-white/5 ml-1"
-              title="Delete message"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => { setShowDeletePicker(!showDeletePicker); setShowPicker(false); }}
+                className="text-[10px] text-neutral-500 hover:text-red-400 transition-colors flex items-center justify-center w-5 h-5 rounded hover:bg-white/5 ml-1"
+                title="Delete message"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+              <AnimatePresence>
+                {showDeletePicker && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 5 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 5 }}
+                    className="absolute bottom-full right-0 mb-2 w-36 bg-[#18191E] border border-white/10 rounded-xl shadow-xl overflow-hidden flex flex-col p-1 z-50"
+                  >
+                    <button
+                      onClick={() => { onDelete(message.id, false); setShowDeletePicker(false); }}
+                      className="text-xs text-left px-3 py-2 text-neutral-300 hover:bg-white/5 hover:text-white rounded-lg transition-colors"
+                    >
+                      Delete for me
+                    </button>
+                    <button
+                      onClick={() => { onDelete(message.id, true); setShowDeletePicker(false); }}
+                      className="text-xs text-left px-3 py-2 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-lg transition-colors"
+                    >
+                      Delete for everyone
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           )}
         </div>
       </div>
