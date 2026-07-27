@@ -13,7 +13,6 @@ import { useAuth } from "@/context/AuthContext";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { LoadingSkeleton } from "@/components/ui/LoadingSkeleton";
 
 const schema = z.object({
   email: z.string().email("Enter a valid email address"),
@@ -101,107 +100,97 @@ export default function LoginPage() {
         </div>
 
         <GlassCard className="p-8" glow glowColor="primary">
-          {googleLoading || isSubmitting ? (
-            <div className="py-8">
-              <LoadingSkeleton lines={5} />
-              <p className="text-center text-sm text-neutral-400 mt-6 animate-pulse">
-                Signing you in...
-              </p>
-            </div>
-          ) : (
-            <>
-              {/* Google */}
-              <Button
-                variant="secondary"
-                className="w-full mb-6 text-primary-orange border-primary-orange/30 hover:bg-primary-orange/10"
-                onClick={handleGoogle}
-                icon={<GoogleIcon />}
+          {/* Google */}
+          <Button
+            variant="secondary"
+            className="w-full mb-6 text-primary-orange border-primary-orange/30 hover:bg-primary-orange/10"
+            onClick={handleGoogle}
+            loading={googleLoading}
+            icon={<GoogleIcon />}
+          >
+            Continue with Google
+          </Button>
+
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex-1 h-px bg-white/10" />
+            <span className="text-xs text-neutral-600">or</span>
+            <div className="flex-1 h-px bg-white/10" />
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
+            <Input
+              id="email"
+              type="email"
+              label="Email"
+              placeholder="you@example.com"
+              icon={<Mail className="w-4 h-4" />}
+              error={errors.email?.message}
+              autoComplete="email"
+              {...register("email")}
+            />
+
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              label="Password"
+              placeholder="••••••••"
+              icon={<Lock className="w-4 h-4" />}
+              error={errors.password?.message}
+              autoComplete="current-password"
+              rightElement={
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="text-neutral-500 hover:text-primary-orange transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              }
+              {...register("password")}
+            />
+
+            {/* Remember me + forgot */}
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  id="rememberMe"
+                  className="rounded border-white/20 bg-white/[0.04] text-primary-orange focus:ring-primary-orange/40"
+                  {...register("rememberMe")}
+                />
+                <span className="text-xs text-neutral-400">Remember me</span>
+              </label>
+              <Link
+                href="/forgot-password"
+                className="text-xs text-primary-orange hover:text-white transition-colors"
               >
-                Continue with Google
-              </Button>
+                Forgot password?
+              </Link>
+            </div>
 
-              <div className="flex items-center gap-3 mb-6">
-                <div className="flex-1 h-px bg-white/10" />
-                <span className="text-xs text-neutral-600">or</span>
-                <div className="flex-1 h-px bg-white/10" />
-              </div>
+            {authError && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3"
+              >
+                {authError}
+              </motion.p>
+            )}
 
-              {/* Form */}
-              <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
-                <Input
-                  id="email"
-                  type="email"
-                  label="Email"
-                  placeholder="you@example.com"
-                  icon={<Mail className="w-4 h-4" />}
-                  error={errors.email?.message}
-                  autoComplete="email"
-                  {...register("email")}
-                />
+            <Button type="submit" className="w-full mt-2" loading={isSubmitting}>
+              Sign In
+            </Button>
+          </form>
 
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  label="Password"
-                  placeholder="••••••••"
-                  icon={<Lock className="w-4 h-4" />}
-                  error={errors.password?.message}
-                  autoComplete="current-password"
-                  rightElement={
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((v) => !v)}
-                      className="text-neutral-500 hover:text-primary-orange transition-colors"
-                      aria-label={showPassword ? "Hide password" : "Show password"}
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  }
-                  {...register("password")}
-                />
-
-                {/* Remember me + forgot */}
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      id="rememberMe"
-                      className="rounded border-white/20 bg-white/[0.04] text-primary-orange focus:ring-primary-orange/40"
-                      {...register("rememberMe")}
-                    />
-                    <span className="text-xs text-neutral-400">Remember me</span>
-                  </label>
-                  <Link
-                    href="/forgot-password"
-                    className="text-xs text-primary-orange hover:text-white transition-colors"
-                  >
-                    Forgot password?
-                  </Link>
-                </div>
-
-                {authError && (
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3"
-                  >
-                    {authError}
-                  </motion.p>
-                )}
-
-                <Button type="submit" className="w-full mt-2">
-                  Sign In
-                </Button>
-              </form>
-
-              <p className="text-center text-sm text-neutral-500 mt-6">
-                Don&apos;t have an account?{" "}
-                <Link href="/signup" className="text-primary-orange hover:text-white font-medium transition-colors">
-                  Sign up
-                </Link>
-              </p>
-            </>
-          )}
+          <p className="text-center text-sm text-neutral-500 mt-6">
+            Don&apos;t have an account?{" "}
+            <Link href="/signup" className="text-primary-orange hover:text-white font-medium transition-colors">
+              Sign up
+            </Link>
+          </p>
         </GlassCard>
       </motion.div>
     </div>
