@@ -13,6 +13,7 @@ import { useAuth } from "@/context/AuthContext";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { LoadingSkeleton } from "@/components/ui/LoadingSkeleton";
 
 const schema = z
   .object({
@@ -106,108 +107,119 @@ export default function SignupPage() {
         </div>
 
         <GlassCard className="p-8" glow glowColor="primary">
-          <Button
-            variant="secondary"
-            className="w-full mb-6 text-primary-orange border-primary-orange/30 hover:bg-primary-orange/10"
-            onClick={handleGoogle}
-            loading={googleLoading}
-            icon={<GoogleIcon />}
-          >
-            Sign up with Google
-          </Button>
-
-          <div className="flex items-center gap-3 mb-6">
-            <div className="flex-1 h-px bg-white/10" />
-            <span className="text-xs text-neutral-600">or</span>
-            <div className="flex-1 h-px bg-white/10" />
-          </div>
-
-          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
-            <Input
-              id="name"
-              type="text"
-              label="Full Name"
-              placeholder="Jane Smith"
-              icon={<User className="w-4 h-4" />}
-              error={errors.name?.message}
-              autoComplete="name"
-              {...register("name")}
-            />
-
-            <Input
-              id="signup-email"
-              type="email"
-              label="Email"
-              placeholder="you@example.com"
-              icon={<Mail className="w-4 h-4" />}
-              error={errors.email?.message}
-              autoComplete="email"
-              {...register("email")}
-            />
-
-            <Input
-              id="signup-password"
-              type={showPassword ? "text" : "password"}
-              label="Password"
-              placeholder="Min 8 chars, 1 uppercase, 1 number"
-              icon={<Lock className="w-4 h-4" />}
-              error={errors.password?.message}
-              autoComplete="new-password"
-              rightElement={
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="text-neutral-500 hover:text-primary-orange transition-colors"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              }
-              {...register("password")}
-            />
-
-            <Input
-              id="confirm-password"
-              type={showConfirm ? "text" : "password"}
-              label="Confirm Password"
-              placeholder="Repeat password"
-              icon={<Lock className="w-4 h-4" />}
-              error={errors.confirmPassword?.message}
-              autoComplete="new-password"
-              rightElement={
-                <button
-                  type="button"
-                  onClick={() => setShowConfirm((v) => !v)}
-                  className="text-neutral-500 hover:text-primary-orange transition-colors"
-                  aria-label={showConfirm ? "Hide confirm password" : "Show confirm password"}
-                >
-                  {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              }
-              {...register("confirmPassword")}
-            />
-
-            {authError && (
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3"
+        <GlassCard className="p-8" glow glowColor="primary">
+          {googleLoading || isSubmitting ? (
+            <div className="py-8">
+              <LoadingSkeleton lines={5} />
+              <p className="text-center text-sm text-neutral-400 mt-6 animate-pulse">
+                Creating your account...
+              </p>
+            </div>
+          ) : (
+            <>
+              <Button
+                variant="secondary"
+                className="w-full mb-6 text-primary-orange border-primary-orange/30 hover:bg-primary-orange/10"
+                onClick={handleGoogle}
+                icon={<GoogleIcon />}
               >
-                {authError}
-              </motion.p>
-            )}
+                Sign up with Google
+              </Button>
 
-            <Button type="submit" className="w-full mt-2" loading={isSubmitting}>
-              Create Account
-            </Button>
-          </form>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="flex-1 h-px bg-white/10" />
+                <span className="text-xs text-neutral-600">or</span>
+                <div className="flex-1 h-px bg-white/10" />
+              </div>
 
-          <p className="text-center text-sm text-neutral-500 mt-6">
-            Already have an account?{" "}
-            <Link href="/login" className="text-primary-orange hover:text-white font-medium transition-colors">
-              Sign in
-            </Link>
-          </p>
+              <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
+                <Input
+                  id="name"
+                  type="text"
+                  label="Full Name"
+                  placeholder="Jane Smith"
+                  icon={<User className="w-4 h-4" />}
+                  error={errors.name?.message}
+                  autoComplete="name"
+                  {...register("name")}
+                />
+
+                <Input
+                  id="signup-email"
+                  type="email"
+                  label="Email"
+                  placeholder="you@example.com"
+                  icon={<Mail className="w-4 h-4" />}
+                  error={errors.email?.message}
+                  autoComplete="email"
+                  {...register("email")}
+                />
+
+                <Input
+                  id="signup-password"
+                  type={showPassword ? "text" : "password"}
+                  label="Password"
+                  placeholder="Min 8 chars, 1 uppercase, 1 number"
+                  icon={<Lock className="w-4 h-4" />}
+                  error={errors.password?.message}
+                  autoComplete="new-password"
+                  rightElement={
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="text-neutral-500 hover:text-primary-orange transition-colors"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  }
+                  {...register("password")}
+                />
+
+                <Input
+                  id="confirm-password"
+                  type={showConfirm ? "text" : "password"}
+                  label="Confirm Password"
+                  placeholder="Repeat password"
+                  icon={<Lock className="w-4 h-4" />}
+                  error={errors.confirmPassword?.message}
+                  autoComplete="new-password"
+                  rightElement={
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirm((v) => !v)}
+                      className="text-neutral-500 hover:text-primary-orange transition-colors"
+                      aria-label={showConfirm ? "Hide confirm password" : "Show confirm password"}
+                    >
+                      {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  }
+                  {...register("confirmPassword")}
+                />
+
+                {authError && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3"
+                  >
+                    {authError}
+                  </motion.p>
+                )}
+
+                <Button type="submit" className="w-full mt-2">
+                  Create Account
+                </Button>
+              </form>
+
+              <p className="text-center text-sm text-neutral-500 mt-6">
+                Already have an account?{" "}
+                <Link href="/login" className="text-primary-orange hover:text-white font-medium transition-colors">
+                  Sign in
+                </Link>
+              </p>
+            </>
+          )}
         </GlassCard>
       </motion.div>
     </div>
