@@ -12,6 +12,11 @@ A high-performance local file transfer utility. Sync allows you to quickly pair 
 - **Real-Time Progress:** View granular progress bars for incoming and outgoing files.
 - **Voice Notes:** Record and send audio messages directly within the chat.
 
+## Recent Updates
+
+- **Legal Pages Added:** Dedicated pages for Privacy Policy, Terms of Service, and Contact Us.
+- **UI Enhancements:** Added an "Enter Code" quick link to the main navigation header for easier access.
+- **Bug Fixes:** Resolved runtime errors with Framer Motion `useMotionValue` in Client Components (`GlassCard`).
 ## Getting Started
 
 ### 1. Prerequisites
