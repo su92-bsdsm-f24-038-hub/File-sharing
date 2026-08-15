@@ -222,12 +222,12 @@ export default function DashboardPage() {
 
       {/* Background */}
       <div className="pointer-events-none fixed inset-0 z-0">
-        <div className="absolute top-[-10%] left-[5%] w-[500px] h-[500px] rounded-full bg-primary-orange/15 blur-[120px] animate-blob" />
-        <div className="absolute bottom-[10%] right-[-5%] w-[400px] h-[400px] rounded-full bg-glow-orange/10 blur-[120px] animate-blob animation-delay-2000" />
+        <div className="absolute top-[-10%] left-[5%] w-[500px] h-[500px] rounded-full bg-primary-orange/15 blur-[60px] md:blur-[120px]" />
+        <div className="absolute bottom-[10%] right-[-5%] w-[400px] h-[400px] rounded-full bg-glow-orange/10 blur-[60px] md:blur-[120px]" />
       </div>
 
       {/* Header */}
-      <header className="relative z-10 border-b border-white/5 px-6 py-4 bg-[#09090B]/50 backdrop-blur-xl">
+      <header className="relative z-10 border-b border-white/5 px-4 sm:px-6 py-4 bg-[#09090B]/50 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <Logo className="w-10 h-10" />
@@ -252,9 +252,9 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <main className="relative z-10 max-w-6xl mx-auto px-6 py-10">
+      <main className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-6 md:py-10">
         {/* Title */}
-        <div className="mb-10">
+        <div className="mb-6 md:mb-10">
           <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
           <p className="text-neutral-400">
             Generate a session, scan the QR on your phone, and start sharing instantly.
@@ -464,7 +464,7 @@ export default function DashboardPage() {
 
           {/* Right: Transfer panel */}
           <div className="lg:col-span-3 min-h-0">
-            <GlassCard className="h-[700px] flex flex-col overflow-hidden relative min-h-0">
+            <GlassCard className="h-[500px] lg:h-[700px] flex flex-col overflow-hidden relative min-h-0">
               <div className="absolute inset-0 bg-gradient-to-b from-primary-orange/5 to-transparent pointer-events-none" />
               
               <div className="px-6 py-5 border-b border-white/5 flex items-center justify-between relative z-10 bg-[#15171D]/80 backdrop-blur-md">

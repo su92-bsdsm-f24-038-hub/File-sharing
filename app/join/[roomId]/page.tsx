@@ -135,8 +135,8 @@ function JoinPageInner() {
     >
       {/* Animated Gradient Mesh */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-        <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-primary-start/10 blur-[120px] animate-blob" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] rounded-full bg-cyan-accent/10 blur-[100px] animate-blob animation-delay-2000" />
+        <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-primary-start/10 blur-[60px] md:blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] rounded-full bg-cyan-accent/10 blur-[60px] md:blur-[100px]" />
       </div>
 
       {/* Header */}
