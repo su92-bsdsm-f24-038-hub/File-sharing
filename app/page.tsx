@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Zap, Shield, ArrowRight, Lock, Phone } from "lucide-react";
+import { Zap, Shield, ArrowRight, Lock, Phone, MoreVertical, X } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { MagneticButton } from "@/components/ui/MagneticButton";
@@ -22,6 +22,7 @@ const stagger = {
 };
 
 export default function LandingPage() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
   const scrollProgressRef = useRef<HTMLDivElement>(null);
 
@@ -93,14 +94,14 @@ export default function LandingPage() {
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed top-6 left-0 right-0 mx-auto z-50 flex items-center gap-12 px-6 py-3 w-max bg-[#111111] rounded-full border border-white/5 shadow-2xl"
+          className={`fixed top-6 left-4 right-4 md:left-0 md:right-0 md:mx-auto z-50 flex items-center justify-between md:justify-center md:gap-12 px-5 md:px-6 py-3 md:w-max bg-[#111111] rounded-full border border-white/5 shadow-2xl transition-all ${isMenuOpen ? "rounded-b-[24px] rounded-t-[24px] md:rounded-full bg-[#111217]" : ""}`}
         >
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <Logo className="w-14 h-14" />
+            <Logo className="w-10 h-10 md:w-14 md:h-14" />
           </div>
 
-          {/* Links (Center) */}
+          {/* Links (Desktop) */}
           <div className="hidden md:flex items-center gap-6 text-sm font-medium text-neutral-400">
             <Link href="/pricing" className="hover:text-white transition-colors flex items-center gap-1">Pricing</Link>
             <Link href="/join" className="hover:text-white transition-colors flex items-center gap-1">Enter Code</Link>
@@ -110,8 +111,8 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          {/* CTA (Right) */}
-          <div>
+          {/* CTA (Desktop) */}
+          <div className="hidden md:block">
             <Link href="/signup">
               <MagneticButton intensity={0.1}>
                 <Button size="sm" className="bg-white hover:bg-neutral-200 text-black rounded-full px-6 py-4 font-bold shadow-md flex items-center gap-2 border-0">
@@ -120,6 +121,32 @@ export default function LandingPage() {
               </MagneticButton>
             </Link>
           </div>
+
+          {/* Mobile Menu Button (3 dots) */}
+          <div className="md:hidden flex items-center">
+            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-2 text-neutral-400 hover:text-white transition-colors focus:outline-none">
+              {isMenuOpen ? <X className="w-6 h-6" /> : <MoreVertical className="w-6 h-6" />}
+            </button>
+          </div>
+          
+          {/* Mobile Dropdown Menu */}
+          <AnimatePresence>
+            {isMenuOpen && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="absolute top-[110%] left-0 right-0 bg-[#111111] rounded-2xl border border-white/5 shadow-2xl flex flex-col p-4 gap-3 md:hidden overflow-hidden origin-top"
+              >
+                <Link href="/pricing" onClick={() => setIsMenuOpen(false)} className="px-4 py-3 text-neutral-300 hover:text-white hover:bg-white/5 rounded-xl transition-colors font-medium text-center">Pricing</Link>
+                <Link href="/join" onClick={() => setIsMenuOpen(false)} className="px-4 py-3 text-neutral-300 hover:text-white hover:bg-white/5 rounded-xl transition-colors font-medium text-center">Enter Code</Link>
+                <Link href="/login" onClick={() => setIsMenuOpen(false)} className="px-4 py-3 text-neutral-300 hover:text-white hover:bg-white/5 rounded-xl transition-colors font-medium text-center">Sign In</Link>
+                <div className="w-full h-px bg-white/10 my-1" />
+                <Link href="/dashboard" onClick={() => setIsMenuOpen(false)} className="px-4 py-3 bg-white/5 text-white hover:bg-white/10 rounded-xl transition-colors font-medium text-center">Go to App</Link>
+                <Link href="/signup" onClick={() => setIsMenuOpen(false)} className="px-4 py-3 bg-gradient-to-r from-primary-orange to-glow-orange text-white hover:opacity-90 rounded-xl transition-colors font-bold text-center mt-2 shadow-[0_0_15px_rgba(255,122,26,0.3)]">Get Started Free</Link>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.nav>
 
         {/* Hero */}
@@ -180,7 +207,7 @@ export default function LandingPage() {
             {/* Bento Card 1 with Animated Beam */}
             <div className="md:col-span-2 md:row-span-2">
               <GlassCard className="h-full p-10 flex flex-col relative overflow-hidden group" glow glowColor="primary">
-                <div className="absolute top-0 right-0 w-80 h-80 bg-primary-orange/20 rounded-full blur-[100px]" />
+                <div className="absolute top-[-20%] right-[-10%] w-80 h-80 bg-[radial-gradient(circle,rgba(255,122,26,0.2)_0%,transparent_70%)] rounded-full" />
                 
                 <h3 className="text-3xl font-bold mb-4 z-10 tracking-tight">Peer-to-Peer Transfer</h3>
                 <p className="text-neutral-400 text-lg leading-relaxed max-w-md z-10 mb-8">
