@@ -48,7 +48,7 @@ export default function EnterCodePage() {
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4 relative overflow-hidden">
       <div className="pointer-events-none fixed inset-0">
-        <div className="absolute top-[10%] right-[20%] w-[350px] h-[350px] rounded-full bg-violet-900/20 blur-[100px]" />
+        <div className="absolute top-[10%] right-[20%] w-[350px] h-[350px] rounded-full bg-violet-900/20 blur-[40px] md:blur-[100px]" />
       </div>
 
       <motion.div

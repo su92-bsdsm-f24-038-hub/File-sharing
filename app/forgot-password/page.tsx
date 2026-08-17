@@ -50,7 +50,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen bg-[#09090B] flex items-center justify-center p-4 relative overflow-hidden">
       <div className="pointer-events-none fixed inset-0">
-        <div className="absolute top-[-5%] left-[25%] w-[400px] h-[400px] rounded-full bg-primary-orange/10 blur-[100px]" />
+        <div className="absolute top-[-5%] left-[25%] w-[400px] h-[400px] rounded-full bg-primary-orange/10 blur-[40px] md:blur-[100px]" />
       </div>
 
       <motion.div

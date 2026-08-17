@@ -83,8 +83,8 @@ export default function LoginPage() {
     <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background */}
       <div className="pointer-events-none fixed inset-0">
-        <div className="absolute top-[-10%] left-[20%] w-[400px] h-[400px] rounded-full bg-primary-orange/20 blur-[100px]" />
-        <div className="absolute bottom-[-10%] right-[10%] w-[350px] h-[350px] rounded-full bg-glow-orange/15 blur-[100px]" />
+        <div className="absolute top-[-10%] left-[20%] w-[400px] h-[400px] rounded-full bg-primary-orange/20 blur-[40px] md:blur-[100px]" />
+        <div className="absolute bottom-[-10%] right-[10%] w-[350px] h-[350px] rounded-full bg-glow-orange/15 blur-[40px] md:blur-[100px]" />
       </div>
 
       <motion.div

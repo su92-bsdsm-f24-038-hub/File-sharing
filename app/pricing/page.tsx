@@ -26,8 +26,8 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen bg-black flex flex-col items-center py-20 px-4 relative overflow-hidden">
       <div className="pointer-events-none fixed inset-0 flex items-center justify-center">
-        <div className="absolute top-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-primary-orange/20 blur-[120px]" />
-        <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] rounded-full bg-indigo-500/10 blur-[120px]" />
+        <div className="absolute top-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-primary-orange/20 blur-[60px] md:blur-[120px]" />
+        <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] rounded-full bg-indigo-500/10 blur-[60px] md:blur-[120px]" />
       </div>
 
       <motion.div

@@ -55,7 +55,6 @@ export default function LandingPage() {
       gsap.to(heroRef.current, {
         opacity: 0,
         scale: 0.9,
-        filter: "blur(10px)",
         scrollTrigger: {
           trigger: heroRef.current,
           start: "top top",
